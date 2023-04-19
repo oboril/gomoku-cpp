@@ -1,0 +1,6 @@
+@ECHO OFF
+echo Compiling %1.cpp...
+g++ lib\board\*.cpp lib\minimax\*.cpp src\%1.cpp -o build\%1.exe -O3 -Wall -I"lib" -I"lib\board" -I"lib\minimax"
+echo Running %1.exe...
+echo.
+build\%1.exe
