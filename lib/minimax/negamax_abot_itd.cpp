@@ -17,9 +17,9 @@ struct NodeItD
 
 using TranspTable = std::unordered_map<Board, NodeItD>;
 
-int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
+int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
 
-int64_t negamax_abot_itd(Board b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t *iters)
+int64_t negamax_abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
 {
     TranspTable transp_table;
 
@@ -31,7 +31,7 @@ int64_t negamax_abot_itd(Board b, int64_t depth, const EvaluationTable * eval_ta
     return _negamax_abot_itd(&b, depth, eval_table, predict_table, LOSS, WIN, transp_table, iters);
 }
 
-int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters)
+int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters)
 {
     (*iters)++;
 
@@ -64,15 +64,12 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable * e
     {
         cached->moves = board->get_moves(&DEFAULT_EVAL_TABLE);
 
-        // TODO
-        // adjust the move score to board evaluation
-
-        // find best child
-
-        // eval best child
-
-        // adjust evaluation of all the other possible moves
-
+        int64_t current_score = board->evaluate(eval_table);
+        // Child score = current score + move_score - best_move_score
+        for (Move& m : cached->moves)
+        {
+            m.score = current_score + m.score;
+        }
     }
 
     // If no more moves are possible, it is a draw
@@ -92,13 +89,13 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable * e
         cached->depth = depth;
     }
 
-    // sort the moves by better evaluation
+    // sort the moves by current evaluation
     std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
               { return lhs.score > rhs.score; });
 
     int64_t best = LOSS;
     const int64_t new_alpha = -(beta + SIGN(beta));
-    for (Move& m : cached->moves)
+    for (Move &m : cached->moves)
     {
         const Point p = m.point;
         board->play(p);

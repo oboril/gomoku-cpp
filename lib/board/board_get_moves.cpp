@@ -128,8 +128,8 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
     }
 
     // Put all moves and scores into vector
-    const int64_t bias = (*eval_table)[6];
     std::vector<Move> moves;
+    int64_t best_move = LOSS;
     for (int x = 0; x < BOARD_SIZE; x++)
     {
         for (int y = 0; y < BOARD_SIZE; y++)
@@ -137,9 +137,17 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
             Point p(x, y);
             if (is_empty(p))
             {
-                moves.push_back(Move(p, eval[x][y] + bias));
+                moves.push_back(Move(p, eval[x][y]));
+                best_move = MAX(best_move, eval[x][y]);
             }
         }
+    }
+
+    // Adjust the score baseline such that best_move = bias
+    const int64_t bias = (*eval_table)[6];
+    for (Move &m : moves)
+    {
+        m.score += bias - best_move;
     }
 
     return moves;

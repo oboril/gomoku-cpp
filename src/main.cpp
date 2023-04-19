@@ -21,7 +21,7 @@ int main() {
     return 0;
 }
 
-#define BENCH(func, depth, name) iters = 0; { Timer _t; eval = func(b, depth, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, &iters);} std::cout << name << " evaluation (d=" << depth << "): " << eval << " (" << iters << " iters)\n" << std::endl;
+#define BENCH(func, depth, name) iters = 0; { /*Timer _t;*/ eval = func(b, depth, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, &iters);} std::cout << name << " evaluation (d=" << depth << "): " << eval << " (" << iters << " iters)" << std::endl;
 
 void bench_board(Board b) {
     b.print();
@@ -51,10 +51,12 @@ void bench_board(Board b) {
     //BENCH(negamax_ab_ordered, 4, "Negamax a-b+o  ")
     BENCH(negamax_ab_ordered, 3, "Negamax abo    ")
     BENCH(negamax_ab_ordered, 4, "Negamax abo    ")
+    BENCH(negamax_ab_ordered, 5, "Negamax abo    ")
     //BENCH(negamax_abo_transp, 4, "Negamax a-b+o+t")
     BENCH(negamax_abo_transp, 3, "Negamax a-b+o+t")
     BENCH(negamax_abo_transp, 4, "Negamax a-b+o+t")
 
     BENCH(negamax_abot_itd, 3,   "Negamax abot+id")
     BENCH(negamax_abot_itd, 4,   "Negamax abot+id")
+    BENCH(negamax_abot_itd, 5,   "Negamax abot+id")
 }

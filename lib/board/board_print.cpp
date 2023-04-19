@@ -53,6 +53,7 @@ void Board::print() const {
     for (char i = 0; i < BOARD_SIZE; i++) {
         cout << " " << (char)(i+'A') << " ";
     }
+    cout << "\n";
     #endif
 }
 

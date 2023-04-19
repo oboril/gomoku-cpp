@@ -40,22 +40,13 @@ bool play_move(Board *board, const EvaluationTable *eval_table)
 double get_eval_errors(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
 {
     // best move should leave eval unchanged
-    // predicted = current - best_move_prediction + move_prediction
+    // predicted = current + move_prediction
 
     auto moves = board->get_moves(predict_table);
 
     double curr_eval = (double)board->evaluate(eval_table);
 
-    // find best move
-    double best_move = -1e99;
-    for (const Move m : moves)
-    {
-        best_move = MAX(best_move, (double)m.score);
-    }
-
     double error = 0;
-
-    const double count = (double)moves.size();
 
     // sum all errors
     for (const Move m : moves)
@@ -64,12 +55,12 @@ double get_eval_errors(Board *board, const EvaluationTable *eval_table, const Ev
         double new_eval = -(double)board->evaluate(eval_table);
         board->reset_move(m.point);
 
-        double predicted_eval = curr_eval - best_move + (double)m.score;
+        double predicted_eval = curr_eval + (double)m.score;
 
         double err = predicted_eval - new_eval;
         error += err * err;
     }
-    error = sqrt(error / count) / best_move; // relative error
+    error = sqrt(error / (double)moves.size());
     return error;
 }
 
@@ -78,11 +69,11 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e4, 1e12, 0, 1e5,5e3, 1e4, 3e4, 1e7, 0};
-    constexpr double LR = 3e3;
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e4, 1e12, 0, 1e4,5e3, 1e4, 3e4, 1e7, 0};
+    constexpr double LR = 30e-3;
     constexpr double MOMENTUM = 0.9;
 
-    EvaluationTable predict_table{1000, 7000, 13000, 29000, WIN, WIN, 10000, -2500, -10000, -20000, -10000000, LOSS};
+    EvaluationTable predict_table{150, 6000, 12000, 29000, WIN, WIN, -3500, 500, 5000, 15000, 10000000, LOSS};
 
     double predict_table_double[EVAL_TABLE_SIZE];
     for (int i = 0; i < EVAL_TABLE_SIZE; i++)
