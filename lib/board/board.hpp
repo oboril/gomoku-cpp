@@ -18,14 +18,9 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 #define WIN 1000000000000
 #define LOSS -WIN
 
-// OPTIMIZED FOR BOARD OF SIZE 6 !!!
-//static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, 800, 2590, 10000, 10000000, WIN, 0, -285, -1380, -2660, -9000, LOSS};
-//static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1, 600, 2300, 10000, 10000000, WIN, 0, -800, -1000, -2500, -9000, LOSS};
-//static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1, 370, 1000, 8000, 10000000, WIN, 0, -300, -1000, -2000, -9000, LOSS};
-
 // optimized on board size 10
 static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {30, 400, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -20000, -40000, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1200, 7000, 13000, 29000, WIN, WIN, 10000, -2500, -10000, -20000, -10000000, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1200, 7000, 13000, 29000, WIN, WIN, 10000, 2500, 10000, 20000, 10000000, WIN};
 
 struct Point
 {

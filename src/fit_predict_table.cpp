@@ -21,7 +21,7 @@ Board random_board(int iters)
     return b;
 }
 
-bool play_move(Board *board, EvaluationTable *eval_table)
+bool play_move(Board *board, const EvaluationTable *eval_table)
 {
     auto moves = board->get_moves(eval_table);
     Move best_move(Point(0, 0), -1);
@@ -36,16 +36,18 @@ bool play_move(Board *board, EvaluationTable *eval_table)
     return board->check_win(best_move.point);
 }
 
-// Returns RMSE for the predicted move evaluation
-double get_eval_errors(Board *board, EvaluationTable *eval_table, EvaluationTable *predict_table)
+// Returns error for the predicted move evaluation
+double get_eval_errors(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
 {
     // best move should leave eval unchanged
+    // predicted = current - best_move_prediction + move_prediction
 
     auto moves = board->get_moves(predict_table);
 
     double curr_eval = (double)board->evaluate(eval_table);
-    double best_move = -1e99;
 
+    // find best move
+    double best_move = -1e99;
     for (const Move m : moves)
     {
         best_move = MAX(best_move, (double)m.score);
@@ -55,18 +57,19 @@ double get_eval_errors(Board *board, EvaluationTable *eval_table, EvaluationTabl
 
     const double count = (double)moves.size();
 
+    // sum all errors
     for (const Move m : moves)
     {
         board->play(m.point);
         double new_eval = -(double)board->evaluate(eval_table);
         board->reset_move(m.point);
 
-        double predicted_eval = curr_eval + (double)(*predict_table)[6] - best_move + (double)m.score;
+        double predicted_eval = curr_eval - best_move + (double)m.score;
 
         double err = predicted_eval - new_eval;
         error += err * err;
     }
-    error = sqrt(error / count) / best_move;
+    error = sqrt(error / count) / best_move; // relative error
     return error;
 }
 
@@ -75,18 +78,14 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    vector<size_t> variables{0, 1, 2, 3, 4, 6, 7, 8, 9, 10};
-    constexpr double learning_rates[12] = {1e3, 5e3, 1e4, 5e4, 1e12, 0, 1e5,5e3, 1e4, 3e4, 1e7, 0};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e4, 1e12, 0, 1e5,5e3, 1e4, 3e4, 1e7, 0};
     constexpr double LR = 3e3;
     constexpr double MOMENTUM = 0.9;
 
     EvaluationTable predict_table{1000, 7000, 13000, 29000, WIN, WIN, 10000, -2500, -10000, -20000, -10000000, LOSS};
 
-    EvaluationTable default_eval_table;
-    memcpy(&default_eval_table, &DEFAULT_EVAL_TABLE, sizeof(EvaluationTable));
-
-    double predict_table_double[12];
-    for (int i = 0; i < 12; i++)
+    double predict_table_double[EVAL_TABLE_SIZE];
+    for (int i = 0; i < EVAL_TABLE_SIZE; i++)
     {
         predict_table_double[i] = (double)predict_table[i];
     }
@@ -98,19 +97,12 @@ int main()
     for (int iter = 0; iter < 1000000000; iter++)
     {
         board_moves += 1;
-        if (play_move(&b, &default_eval_table) || board_moves > 10)
+        if (play_move(&b, &DEFAULT_PREDICT_TABLE) || board_moves > 10)
         {
             b = random_board(4);
             board_moves = 0;
         }
-        double rmse = get_eval_errors(&b, &default_eval_table, &predict_table);
-
-        //if (rmse > 10000000)
-        //{
-        //    b = random_board(4);
-        //    board_moves = 0;
-        //    iter--;
-        //}
+        double rmse = get_eval_errors(&b, &DEFAULT_EVAL_TABLE, &predict_table);
 
         mean_mse += rmse / 10000;
 
@@ -127,11 +119,11 @@ int main()
         }
 
         // accumulate gradient
-        for (size_t var : variables)
+        for (size_t var = 0; var < EVAL_TABLE_SIZE; var++)
         {
             int64_t *v = &predict_table[var];
             *v += 1;
-            double rmse_new = get_eval_errors(&b, &default_eval_table, &predict_table);
+            double rmse_new = get_eval_errors(&b, &DEFAULT_EVAL_TABLE, &predict_table);
             double grad = rmse - rmse_new;
             *v -= 1;
 
@@ -141,15 +133,14 @@ int main()
         // apply gradient to eval table
         if (iter % 1000 == 0)
         {
-            for (size_t var : variables)
+            for (size_t var = 0; var < EVAL_TABLE_SIZE; var++)
             {
+                // update precise values
                 predict_table_double[var] += gradients[var] / 1000 * LR * learning_rates[var];
                 gradients[var] *= MOMENTUM;
-            }
 
-            for (int i = 0; i < 12; i++)
-            {
-                predict_table[i] = (int64_t)predict_table_double[i];
+                // update integer values
+                predict_table[var] = (int64_t)predict_table_double[var];
             }
         }
     }

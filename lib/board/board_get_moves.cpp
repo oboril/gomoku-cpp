@@ -128,7 +128,7 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
     }
 
     // Put all moves and scores into vector
-    const int64_t bias = (*eval_table[6]);
+    const int64_t bias = (*eval_table)[6];
     std::vector<Move> moves;
     for (int x = 0; x < BOARD_SIZE; x++)
     {

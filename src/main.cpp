@@ -32,19 +32,19 @@ void bench_board(Board b) {
     std::cout << "Evaluation (depth 0): " << eval << "\n" << std::endl;
 
     // Value of best move
-    auto moves = b.get_moves(&DEFAULT_EVAL_TABLE);
+    auto moves = b.get_moves(&DEFAULT_PREDICT_TABLE);
     int64_t max_move = LOSS;
     for (const Move m : moves) {
         max_move = MAX(m.score, max_move);
     }
     std::cout << "Max move score: " << max_move << "\n" << std::endl;
 
-    //BENCH(simple_negamax, 1,     "Negamax        ")
-    //BENCH(simple_negamax, 2,     "Negamax        ")
+    BENCH(simple_negamax, 1,     "Negamax        ")
+    BENCH(simple_negamax, 2,     "Negamax        ")
     //BENCH(simple_negamax, 3,     "Negamax        ")
     //BENCH(simple_negamax, 4,     "Negamax        ")
-    //BENCH(negamax_alphabeta, 3,  "Negamax a-b    ")
-    //BENCH(negamax_alphabeta, 4,  "Negamax a-b    ")
+    BENCH(negamax_alphabeta, 2,  "Negamax a-b    ")
+    BENCH(negamax_alphabeta, 3,  "Negamax a-b    ")
     //BENCH(negamax_alphabeta, 5,  "Negamax a-b    ")
     //BENCH(negamax_ab_ordered, 4, "Negamax a-b+o  ")
     //BENCH(negamax_ab_ordered, 3, "Negamax a-b+o  ")
