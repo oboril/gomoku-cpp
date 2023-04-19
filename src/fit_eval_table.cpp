@@ -54,11 +54,11 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    EvaluationTable eval_table{60, 700, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -22000, -43000, LOSS};
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {10, 5e2, 1e4, 0, 1e7, 0, 1e4, 10, 1e2, 2e4, 1e5, 0};
+    EvaluationTable eval_table{50, 850, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -22000, -55000, LOSS};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {10, 5e2, 1e4, 0, 1e7, 0, 1e4, 10, 1e2, 2e4, 1e6, 0};
     constexpr double LR = 30;
     constexpr double MOMENTUM = 0.7;
-    constexpr int BATCH = 1000;
+    constexpr int BATCH = 3000;
 
     double eval_table_double[12];
     for (int i = 0; i < 12; i++)

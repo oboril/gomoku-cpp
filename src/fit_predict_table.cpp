@@ -24,7 +24,7 @@ Board random_board(int iters)
 bool play_move(Board *board, const EvaluationTable *eval_table)
 {
     auto moves = board->get_moves(eval_table);
-    Move best_move(Point(0, 0), LOSS);
+    Move best_move(Point(0, 0), 10*LOSS);
     for (Move m : moves)
     {
         if (m.score > best_move.score)
@@ -69,12 +69,12 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e3, 1e12, 0, 1e3,1e3, 1e4, 2e4, 1e7, 0};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e3, 1e10, 0, 1e3,1e3, 1e4, 2e4, 1e8, 0};
     constexpr double LR = 10e-3;
     constexpr double MOMENTUM = 0.7;
-    constexpr int BATCH = 1000;
+    constexpr int BATCH = 3000;
 
-    EvaluationTable predict_table{400, 7000, 13000, 22000, WIN, WIN, 0, 1000, 8000, 20000, 10000000, LOSS};
+    EvaluationTable predict_table{500, 8000, 15000, 25000, 20000000, WIN, 0, 1500, 8000, 20000, 20000000, LOSS};
 
     double predict_table_double[EVAL_TABLE_SIZE];
     for (int i = 0; i < EVAL_TABLE_SIZE; i++)
