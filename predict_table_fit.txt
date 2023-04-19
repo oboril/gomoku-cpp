@@ -1,0 +1,6 @@
+Compiling fit_predict_table.cpp...
+Running fit_predict_table.exe...
+
+RMSE: 0.196151
+Predict table: 400, 7000, 13000, 22000, 1000000000000, 1000000000000, 0, 1000, 8000, 20000, 10000000, -1000000000000, 
+

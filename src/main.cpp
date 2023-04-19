@@ -31,13 +31,10 @@ void bench_board(Board b) {
     int64_t eval = b.evaluate(&DEFAULT_EVAL_TABLE);
     std::cout << "Evaluation (depth 0): " << eval << "\n" << std::endl;
 
-    // Value of best move
-    auto moves = b.get_moves(&DEFAULT_PREDICT_TABLE);
-    int64_t max_move = LOSS;
-    for (const Move m : moves) {
-        max_move = MAX(m.score, max_move);
-    }
-    std::cout << "Max move score: " << max_move << "\n" << std::endl;
+    b.swap_player();
+    const int64_t passing_move = -b.evaluate(&DEFAULT_EVAL_TABLE);
+    b.swap_player();
+    std::cout << "Passing move score: " << passing_move << "\n" << std::endl;
 
     BENCH(simple_negamax, 1,     "Negamax        ")
     BENCH(simple_negamax, 2,     "Negamax        ")

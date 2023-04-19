@@ -11,8 +11,8 @@ Board random_board(int iters)
     Board b;
     while (iters > 0)
     {
-        int x = (std::rand() % 4) + 1;
-        int y = (std::rand() % 4) + 1;
+        int x = (std::rand() % 4) + (BOARD_SIZE / 2 - 2);
+        int y = (std::rand() % 4) + (BOARD_SIZE / 2 - 2);
         if (b.play_checked(Point(x, y)))
         {
             iters--;
@@ -24,7 +24,7 @@ Board random_board(int iters)
 bool play_move(Board *board, const EvaluationTable *eval_table)
 {
     auto moves = board->get_moves(eval_table);
-    Move best_move(Point(0, 0), -1);
+    Move best_move(Point(0, 0), LOSS);
     for (Move m : moves)
     {
         if (m.score > best_move.score)
@@ -41,8 +41,11 @@ double get_error(Board *board, const EvaluationTable *eval_table)
     double e1 = (double)board->evaluate(eval_table);
     int64_t iters = 0;
     double e2 = (double)negamax_ab_ordered(*board, 1, eval_table, &DEFAULT_PREDICT_TABLE, &iters);
-    double err = (e1-e2)/MAX(abs(e1), abs(e2));
-    return abs(err);
+    double e3 = (double)negamax_ab_ordered(*board, 2, eval_table, &DEFAULT_PREDICT_TABLE, &iters);
+
+    double mean = (e1 + e2 + e3) / 3;
+    double err = abs(mean - e1) + abs(mean - e2) + abs(mean - e3);
+    return err / MAX(1000, abs(mean));
     // USING RELATIVE ERROR SEEMS VERY NICE
 }
 
@@ -51,10 +54,11 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    EvaluationTable eval_table{30, 400, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -20000, -40000, LOSS};
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {0.001,0.01,0.5,5.,50,0,50,0.1,0.5,5.,50,0};
-    constexpr double LR = 10e5;
-    constexpr double MOMENTUM = 0.9;
+    EvaluationTable eval_table{60, 700, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -22000, -43000, LOSS};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {10, 5e2, 1e4, 0, 1e7, 0, 1e4, 10, 1e2, 2e4, 1e5, 0};
+    constexpr double LR = 30;
+    constexpr double MOMENTUM = 0.7;
+    constexpr int BATCH = 1000;
 
     double eval_table_double[12];
     for (int i = 0; i < 12; i++)
@@ -76,12 +80,9 @@ int main()
         }
         double rmse = get_error(&b, &eval_table);
 
-        if (rmse < 30000) {
-            mean_mse += rmse / 10000;
-        }
-        
+        mean_mse += rmse / (BATCH * 10);
 
-        if (iter % 10000 == 0)
+        if (iter % (BATCH * 10) == 0)
         {
             std::cout << "MSE: " << mean_mse << "\n";
 
@@ -90,9 +91,10 @@ int main()
             {
                 std::cout << eval_table[i] << ", ";
             }
-            std::cout << "\n\n";
+            std::cout << "\n" << endl;
 
             mean_mse = 0;
+            //b.print();
         }
 
         // accumulate gradient
@@ -108,11 +110,11 @@ int main()
         }
 
         // apply gradient to eval table
-        if (iter % 1000 == 0)
+        if (iter % BATCH == 0)
         {
             for (size_t var = 0; var < EVAL_TABLE_SIZE; var++)
             {
-                eval_table_double[var] += gradients[var] / 1000 * learning_rates[var] * LR;
+                eval_table_double[var] += gradients[var] / BATCH * learning_rates[var] * LR;
                 gradients[var] *= MOMENTUM;
 
                 eval_table[var] = (int64_t)eval_table_double[var];
