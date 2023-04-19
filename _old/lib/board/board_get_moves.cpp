@@ -10,7 +10,7 @@ inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable *eval
     }
     else if (c1 == 0)
     {
-        return (*eval_table)[c2 + 6];
+        return -(*eval_table)[c2 + 6];
     }
     else
     {
@@ -18,7 +18,7 @@ inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable *eval
     }
 }
 
-// Returns valid moves and their evaluated score
+// returns moves ordered by score, highest score first
 vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
 {
     int64_t eval[BOARD_SIZE][BOARD_SIZE] = {};
@@ -128,7 +128,6 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
     }
 
     // Put all moves and scores into vector
-    const int64_t bias = (*eval_table[6]);
     std::vector<Move> moves;
     for (int x = 0; x < BOARD_SIZE; x++)
     {
@@ -137,7 +136,7 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
             Point p(x, y);
             if (is_empty(p))
             {
-                moves.push_back(Move(p, eval[x][y] + bias));
+                moves.push_back(Move(p, eval[x][y]));
             }
         }
     }

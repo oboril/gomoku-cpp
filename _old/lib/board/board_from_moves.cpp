@@ -4,8 +4,6 @@
 
 #define MOVE if (!play_checked(Point(x, BOARD_SIZE - y))){return false;} y=0;x=0;
 
-
-// Takes in moves in the standard notation, e.g. "A3B8C11"
 bool Board::moves_from_string(const std::string &moves)
 {
     size_t x = 0;

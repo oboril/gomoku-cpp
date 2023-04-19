@@ -12,7 +12,6 @@ inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable * eva
     }
 }
 
-// Returns evaluation of the current position
 int64_t Board::evaluate(const EvaluationTable * eval_table) const {
     int64_t eval = 0;
     const BoardRow* p1 = m_board[m_player];
