@@ -22,7 +22,7 @@ using EvaluationTable = int64_t[12];
 //static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1, 600, 2300, 10000, 10000000, WIN, 0, -800, -1000, -2500, -9000, LOSS};
 //static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1, 370, 1000, 8000, 10000000, WIN, 0, -300, -1000, -2000, -9000, LOSS};
 
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, -100, 1000, 2800, 10000000, WIN, 0, 150, -650, -2400, -5000, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {30, 400, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -20000, -40000, LOSS};
 static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {1, 0, 0, 0, 10000000, WIN, 0, 0, 0, 0, 0, LOSS};
 
 struct Point

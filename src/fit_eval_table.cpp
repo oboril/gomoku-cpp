@@ -54,9 +54,9 @@ int main()
     // vector<size_t> variables{1, 2, 3, 4, 7, 8, 9, 10};
     vector<size_t> variables{0,1, 2, 4,6, 7, 8, 9, 10};
 
-    EvaluationTable eval_table{20, 250, 7500, 25000, 10000000, WIN, 10000, -50, -5500, -16000, -45000, LOSS};
-    constexpr double learning_rates[12] = {0.001,0.01,0.5,5.,50,0,50,0.01,0.5,5.,50,0};
-    constexpr double LR = 3e5;
+    EvaluationTable eval_table{30, 400, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -20000, -40000, LOSS};
+    constexpr double learning_rates[12] = {0.001,0.01,0.5,5.,50,0,50,0.1,0.5,5.,50,0};
+    constexpr double LR = 10e5;
     constexpr double MOMENTUM = 0.9;
 
     EvaluationTable default_eval_table;
