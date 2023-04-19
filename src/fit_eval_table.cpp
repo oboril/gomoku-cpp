@@ -51,9 +51,6 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    // vector<size_t> variables{1, 2, 3, 4, 7, 8, 9, 10};
-    vector<size_t> variables{0,1, 2, 4,6, 7, 8, 9, 10};
-
     EvaluationTable eval_table{30, 400, 10000, 25000, 10000000, WIN, 10000, -100, -8000, -20000, -40000, LOSS};
     constexpr double learning_rates[12] = {0.001,0.01,0.5,5.,50,0,50,0.1,0.5,5.,50,0};
     constexpr double LR = 10e5;

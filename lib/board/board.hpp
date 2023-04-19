@@ -11,7 +11,8 @@
 #define BOARD_SIZE 10
 constexpr size_t BOARD_SIZE_ALLOC = ((BOARD_SIZE + 1) / 2) * 2;
 using BoardRow = uint16_t;
-using EvaluationTable = int64_t[12];
+#define EVAL_TABLE_SIZE 12
+using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 
 // WIN = 10^12
 #define WIN 1000000000000

@@ -2,14 +2,14 @@
 #include "board.hpp"
 #include <algorithm>
 
-int64_t _negamax_ab_ordered(Board *board, int64_t depth, EvaluationTable * eval_table, int64_t alpha, int64_t beta, int64_t *iters);
+int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-int64_t negamax_ab_ordered(Board b, int64_t depth, EvaluationTable * eval_table, int64_t *iters)
+int64_t negamax_ab_ordered(Board b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t *iters)
 {
-    return _negamax_ab_ordered(&b, depth, eval_table, LOSS, WIN, iters);
+    return _negamax_ab_ordered(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _negamax_ab_ordered(Board *board, int64_t depth, EvaluationTable * eval_table, int64_t alpha, int64_t beta, int64_t *iters)
+int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 
@@ -18,7 +18,7 @@ int64_t _negamax_ab_ordered(Board *board, int64_t depth, EvaluationTable * eval_
         return board->evaluate(eval_table);
     }
 
-    std::vector<Move> moves = board->get_moves(eval_table);
+    std::vector<Move> moves = board->get_moves(predict_table);
     // sort the moves
     std::sort(moves.begin(), moves.end(), [](const Move &lhs, const Move &rhs)
               { return lhs.score > rhs.score; });
@@ -51,7 +51,7 @@ int64_t _negamax_ab_ordered(Board *board, int64_t depth, EvaluationTable * eval_
             continue;
         }
 
-        int64_t score = _negamax_ab_ordered(board, depth - 1, eval_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
+        int64_t score = _negamax_ab_ordered(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
         best = MAX(best, -score + SIGN(score));
         board->reset_move(p);
 

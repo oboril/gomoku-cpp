@@ -1,17 +1,17 @@
 #include "minimax.hpp"
 #include "board.hpp"
 
-int64_t _negamax_alphabeta(Board * b, int64_t depth, int64_t alpha, int64_t beta, int64_t * iters);
+int64_t _negamax_alphabeta(Board * b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t * iters);
 
-int64_t negamax_alphabeta(Board b, int64_t depth, int64_t * iters) {
-    return _negamax_alphabeta(&b, depth, LOSS, WIN, iters);
+int64_t negamax_alphabeta(Board b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t * iters) {
+    return _negamax_alphabeta(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _negamax_alphabeta(Board * b, int64_t depth, int64_t alpha, int64_t beta, int64_t * iters) {
+int64_t _negamax_alphabeta(Board * b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t * iters) {
     (*iters)++;
 
     if (depth == 0) {
-        return b->evaluate(&DEFAULT_EVAL_TABLE);
+        return b->evaluate(eval_table);
     }
 
     int64_t best = LOSS;
@@ -31,7 +31,7 @@ int64_t _negamax_alphabeta(Board * b, int64_t depth, int64_t alpha, int64_t beta
                 return WIN;
             }
 
-            int64_t score = _negamax_alphabeta(b, depth-1, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
+            int64_t score = _negamax_alphabeta(b, depth-1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
             best = MAX(best, -score + SIGN(score));
             b->reset_move(p);
 
