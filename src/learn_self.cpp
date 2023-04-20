@@ -56,8 +56,11 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {100, 1500, 20000, 90000, WIN / 100, WIN, 10000, -500, -20000, -70000, -250000, LOSS};
-    constexpr EvaluationTable pred_init = {400, 8000, 16000, 1000000, WIN / 10, WIN, -2000, 1500, 8500, 100000, WIN / 1000, LOSS};
+    //constexpr EvaluationTable eval_init = {100, 1500, 20000, 90000, WIN / 100, WIN, 10000, -500, -20000, -70000, -250000, LOSS};
+    //constexpr EvaluationTable pred_init = {400, 8000, 16000, 1000000, WIN / 10, WIN, -2000, 1500, 8500, 100000, WIN / 1000, LOSS};
+
+    constexpr EvaluationTable eval_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
+    constexpr EvaluationTable pred_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
 
     constexpr double LEARNING_RATE = 0.01;
     constexpr int BATCH_SIZE = 100;
