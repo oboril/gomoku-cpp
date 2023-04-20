@@ -20,9 +20,9 @@ double get_eval_error(double e1, double e2, double e3)
     e3 = transform_value(e3);
 
     double mean = (e1 + e2 + e3) / 3.;
-    double err = std::abs(mean - e1) + std::abs(mean - e2) + std::abs(mean - e3);
+    double err = std::abs(mean - e1) + 2.*std::abs(mean - e2) + std::abs(mean - e3); // make even weights for odd and even moves
     double norm = std::abs(std::asinh(std::abs(mean) - 10000)); // make evaluation centered around 10k
-    return err / 3. + norm*0.3;
+    return err / 4. + norm*0.3;
 }
 
 double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -64,8 +64,8 @@ int main()
     constexpr EvaluationTable pred_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
 
     constexpr double LEARNING_RATE = 0.1;
-    constexpr int BATCH_SIZE = 100;
-    constexpr int PRINT_EVERY = 50;
+    constexpr int BATCH_SIZE = 500;
+    constexpr int PRINT_EVERY = 10;
     #define NEW_BOARD() Board::random(3)
 
     AdamOpt<12> eval_opt((int64_t *)&eval_init);
@@ -158,7 +158,7 @@ int main()
         // update board
         board.play(next_move);
         board_moves++;
-        if (board.check_win(next_move) || board_moves > 20)
+        if (board.check_win(next_move) || board_moves > (BOARD_SIZE*BOARD_SIZE/2))
         {
             board = NEW_BOARD();
             board_moves = 0;
