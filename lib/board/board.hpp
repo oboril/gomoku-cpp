@@ -19,8 +19,8 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 #define LOSS -WIN
 
 // optimized on board size 10
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {50, 800, 9500, 25000, 10000000, WIN, 9500, -100, -8000, -22000, -52000, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {150, 6000, 13000, 29000, WIN/10, WIN, 0, 700, 8000, 23000, 10000000, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {-100, 2500, 18000, 80000, WIN/100, WIN, 8500, -500, -13000, -45000, -300000, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {400, 8000, 16000, 30000, WIN/10, WIN, -2000, 1500, 8500, 20000, WIN/1000, LOSS};
  
 struct Point
 {
@@ -43,6 +43,9 @@ public:
     Board();
     Board(const Board &rhs);
 
+    static Board random(int iters);
+
+    bool play_predicted_move(const EvaluationTable * predict_table);
     bool moves_from_string(const std::string &moves);
     void set(Point p, bool player);
     void reset_move(Point p);

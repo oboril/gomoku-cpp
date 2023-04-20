@@ -4,37 +4,8 @@
 #include "timer.hpp"
 #include <random>
 #include <vector>
+#include "error_transform.hpp"
 using namespace std;
-
-Board random_board(int iters)
-{
-    Board b;
-    while (iters > 0)
-    {
-        int x = (std::rand() % 4) + (BOARD_SIZE / 2 - 2);
-        int y = (std::rand() % 4) + (BOARD_SIZE / 2 - 2);
-        if (b.play_checked(Point(x, y)))
-        {
-            iters--;
-        }
-    }
-    return b;
-}
-
-bool play_move(Board *board, const EvaluationTable *eval_table)
-{
-    auto moves = board->get_moves(eval_table);
-    Move best_move(Point(0, 0), 10*LOSS);
-    for (Move m : moves)
-    {
-        if (m.score > best_move.score)
-        {
-            best_move = m;
-        }
-    }
-    board->play(best_move.point);
-    return board->check_win(best_move.point);
-}
 
 // Returns error for the predicted move evaluation
 double get_eval_errors(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -45,7 +16,7 @@ double get_eval_errors(Board *board, const EvaluationTable *eval_table, const Ev
     auto moves = board->get_moves(predict_table);
 
     double curr_eval = (double)board->evaluate(eval_table);
-
+    
     double error = 0;
 
     // sum all errors
@@ -55,12 +26,12 @@ double get_eval_errors(Board *board, const EvaluationTable *eval_table, const Ev
         double new_eval = -(double)board->evaluate(eval_table);
         board->reset_move(m.point);
 
-        double predicted_eval = curr_eval + (double)m.score;
+        double real_change = transform_value(curr_eval - new_eval);
+        double pred_change = transform_value(m.score);
 
-        double err = predicted_eval - new_eval;
-        error += err * err;
+        error += abs(real_change - pred_change);
     }
-    error = sqrt(error / (double)moves.size());
+
     return error;
 }
 
@@ -69,12 +40,12 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e3, 1e10, 0, 1e3,1e3, 1e4, 2e4, 1e8, 0};
-    constexpr double LR = 10e-3;
+    EvaluationTable predict_table{400, 8000, 16000, 30000, WIN/100, WIN, -2000, 1500, 8500, 20000, WIN/1000, LOSS};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e3, 1e11, 0, 1e3,1e3, 1e4, 2e4, 1e10, 0};
+    constexpr double LR = 10;
     constexpr double MOMENTUM = 0.7;
-    constexpr int BATCH = 3000;
+    constexpr int BATCH = 300;
 
-    EvaluationTable predict_table{500, 8000, 15000, 25000, 20000000, WIN, 0, 1500, 8000, 20000, 20000000, LOSS};
 
     double predict_table_double[EVAL_TABLE_SIZE];
     for (int i = 0; i < EVAL_TABLE_SIZE; i++)
@@ -82,16 +53,16 @@ int main()
         predict_table_double[i] = (double)predict_table[i];
     }
 
-    Board b = random_board(4);
+    Board b = Board::random(4);
     double mean_mse = 0;
     int board_moves = 0;
     double gradients[12] = {};
     for (int iter = 0; iter < 1000000000; iter++)
     {
         board_moves += 1;
-        if (play_move(&b, &predict_table) || board_moves > 10)
+        if (b.play_predicted_move(&predict_table) || board_moves > 10)
         {
-            b = random_board(4);
+            b = Board::random(4);
             board_moves = 0;
         }
         double rmse = get_eval_errors(&b, &DEFAULT_EVAL_TABLE, &predict_table);
