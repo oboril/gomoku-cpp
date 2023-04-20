@@ -19,10 +19,10 @@ double get_eval_error(double e1, double e2, double e3)
     e2 = transform_value(e2);
     e3 = transform_value(e3);
 
-    double mean = (e1 + e2 + e3) / 3.;
-    double err = std::abs(mean - e1) + 2.*std::abs(mean - e2) + std::abs(mean - e3); // make even weights for odd and even moves
-    double norm = std::abs(std::asinh(std::abs(mean) - 10000)); // make evaluation centered around 10k
-    return err / 4. + norm*0.3;
+    double mean = (e1 + 2.*e2 + e3) / 4.;
+    double err = std::abs(mean - e1) + 2. * std::abs(mean - e2) + std::abs(mean - e3);  // make even weights for odd and even moves
+    //double norm = std::abs(std::asinh(std::abs(mean) - 100000));                        // make evaluation centered around 10k
+    return err / 4.;// + norm * 0.3;
 }
 
 double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -57,16 +57,18 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    //constexpr EvaluationTable eval_init = {100, 1500, 20000, 90000, WIN / 100, WIN, 10000, -500, -20000, -70000, -250000, LOSS};
-    //constexpr EvaluationTable pred_init = {400, 8000, 16000, 1000000, WIN / 10, WIN, -2000, 1500, 8500, 100000, WIN / 1000, LOSS};
+    constexpr EvaluationTable eval_init = {0, 100, 1000, 10000, 100000, WIN, 0, -100, -1000, -10000, -100000, LOSS};
+    constexpr EvaluationTable pred_init = {0, 100, 1000, 10000, 100000, WIN, 0, 100, 1000, 10000, 100000, LOSS};
 
-    constexpr EvaluationTable eval_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
-    constexpr EvaluationTable pred_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
+    //#define RN (rand()%10000-5000)
+    //const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
+    //const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
+    //#undef RN
 
     constexpr double LEARNING_RATE = 0.1;
-    constexpr int BATCH_SIZE = 500;
+    constexpr int BATCH_SIZE = 300;
     constexpr int PRINT_EVERY = 10;
-    #define NEW_BOARD() Board::random(3)
+#define NEW_BOARD() Board::random(3)
 
     AdamOpt<12> eval_opt((int64_t *)&eval_init);
     AdamOpt<12> pred_opt((int64_t *)&pred_init);
@@ -76,6 +78,9 @@ int main()
     int64_t cumul_iters = 0;
     double cumul_eval_error = 0.;
     double cumul_pred_error = 0.;
+    int wins = 0;
+    int draws = 0;
+    int losses = 0;
     Point next_move;
 
     for (int iter = 0; iter >= 0; iter++)
@@ -86,7 +91,7 @@ int main()
         double eval0 = (double)board.evaluate(eval_table);
         double eval1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
         double eval2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-        //double eval2 = eval1;
+        // double eval2 = eval1;
         double eval_loss = get_eval_error(eval0, eval1, eval2);
 
         // get eval gradients
@@ -96,7 +101,7 @@ int main()
             double e0 = (double)board.evaluate(eval_table);
             double e1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
             double e2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-            //double e2 = e1;
+            // double e2 = e1;
             (*eval_table)[i]--;
 
             double new_loss = get_eval_error(e0, e1, e2);
@@ -122,12 +127,18 @@ int main()
         // print summary
         if (iter % (BATCH_SIZE * PRINT_EVERY) == 0)
         {
-            #define PRINT_ARR(arr) for (int i = 0; i < EVAL_TABLE_SIZE; i++) { cout << arr[i] << ", "; } cout << "\n";
+#define PRINT_ARR(arr)                        \
+    for (int i = 0; i < EVAL_TABLE_SIZE; i++) \
+    {                                         \
+        cout << arr[i] << ", ";               \
+    }                                         \
+    cout << "\n";
 
             cout << "Iteration: " << iter;
             cout << ": eval_loss " << (cumul_eval_error / (BATCH_SIZE * PRINT_EVERY));
             cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * PRINT_EVERY));
-            cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY)) << "\n";
+            cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY));
+            cout << ", W/D/L " << wins << "/" << draws << "/" << losses << "\n";
 
             cout << "Eval table: ";
             PRINT_ARR(eval_opt.vals);
@@ -139,6 +150,9 @@ int main()
             cumul_eval_error = 0;
             cumul_pred_error = 0;
             cumul_iters = 0;
+            wins = 0;
+            draws = 0;
+            losses = 0;
         }
 
         // update values when batch is done
@@ -148,23 +162,38 @@ int main()
             eval_opt.apply_gradient(LEARNING_RATE);
         }
 
-        //randomly change move
-        if (rand() % 10 == 0) 
+        // randomly change move
+        if (rand() % 3 == 0)
         {
             auto moves = board.get_moves(pred_table);
-            next_move = moves[rand()%moves.size()].point;
+            next_move = moves[rand() % moves.size()].point;
         }
 
         // update board
         board.play(next_move);
         board_moves++;
-        if (board.check_win(next_move) || board_moves > (BOARD_SIZE*BOARD_SIZE/2))
+        if (board.check_win(next_move) || board_moves > (BOARD_SIZE * BOARD_SIZE / 2))
         {
+            if (board.check_win(next_move))
+            {
+                if (board.get_player())
+                {
+                    wins++;
+                }
+                else
+                {
+                    losses++;
+                }
+            }
+            else
+            {
+                draws++;
+            }
             board = NEW_BOARD();
             board_moves = 0;
         }
 
-        //board.debug();
+        // board.debug();
     }
     return 0;
 };

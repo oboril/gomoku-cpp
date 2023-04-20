@@ -14,10 +14,11 @@ vals = np.array([
 ])
 
 def transform_val(vals):
-    avals = np.arcsinh(vals)
-    most_important = np.arcsinh(10000)
-    avals = np.tanh((avals-most_important)*0.5) + np.tanh((avals+most_important)*0.5)
-    return avals
+    #avals = np.arcsinh(vals)
+    #most_important = np.arcsinh(10000)
+    #avals = np.tanh((avals-most_important)*0.5) + np.tanh((avals+most_important)*0.5)
+    #return avals
+    return np.tanh(np.arcsinh(vals/100)/8)
 
 avals = transform_val(vals)
 print(avals)

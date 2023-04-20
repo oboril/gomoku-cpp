@@ -19,8 +19,8 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 #define LOSS -WIN
 
 // optimized on board size 10
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {100, 1500, 20000, 90000, WIN/100, WIN, 10000, -500, -20000, -70000, -250000, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {400, 8000, 16000, 1000000, WIN/10, WIN, -2000, 1500, 8500, 100000, WIN/1000, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {30, 400, 1000, 3800, 43000, WIN, 500, -300, -800, -1900, -5500, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {400, 400, 3000, 40000, WIN/10, WIN, -500, 300, 700, 3000, 37000, LOSS};
  
 struct Point
 {
@@ -58,6 +58,8 @@ public:
     bool check_win(Point p) const;
     int64_t evaluate(const EvaluationTable *eval_table) const;
     std::vector<Move> get_moves(const EvaluationTable *eval_table) const;
+
+    inline bool get_player() const {return m_player; }
 
     bool operator==(const Board &rhs) const;
     bool operator!=(const Board &rhs) const { return !operator==(rhs); };
