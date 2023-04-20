@@ -9,7 +9,7 @@ struct AdamOpt
     static constexpr double AVG_MOMENUTM = 0.9;
     static constexpr double AVGGRAD_MOMENTUM = 0.9;
     static constexpr double AVGGRAD_EPSILON = 1e-3;
-    static constexpr double INIT_AVGGRAD = 1.;
+    static constexpr double INIT_AVGGRAD = 1e-5;
 
     int64_t vals[N];
     double vals_d[N];

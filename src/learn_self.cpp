@@ -21,7 +21,8 @@ double get_eval_error(double e1, double e2, double e3)
 
     double mean = (e1 + e2 + e3) / 3.;
     double err = std::abs(mean - e1) + std::abs(mean - e2) + std::abs(mean - e3);
-    return err / 3.;
+    double norm = std::abs(std::asinh(std::abs(mean) - 10000)); // make evaluation centered around 10k
+    return err / 3. + norm/10.;
 }
 
 double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -42,7 +43,7 @@ double get_pred_error(Board *board, const EvaluationTable *eval_table, const Eva
         double new_eval = -(double)board->evaluate(eval_table);
         board->reset_move(m.point);
 
-        double real_change = transform_value(curr_eval - new_eval);
+        double real_change = transform_value(new_eval - curr_eval);
         double pred_change = transform_value(m.score);
 
         error += std::abs(real_change - pred_change);
@@ -62,7 +63,7 @@ int main()
     constexpr EvaluationTable eval_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
     constexpr EvaluationTable pred_init = {0, 0, 0, 0, 0, WIN, 0, 0, 0, 0, 0, LOSS};
 
-    constexpr double LEARNING_RATE = 0.01;
+    constexpr double LEARNING_RATE = 0.1;
     constexpr int BATCH_SIZE = 100;
     #define NEW_BOARD() Board::random(3)
 
@@ -84,6 +85,7 @@ int main()
         double eval0 = (double)board.evaluate(eval_table);
         double eval1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
         double eval2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
+        //double eval2 = eval1;
         double eval_loss = get_eval_error(eval0, eval1, eval2);
 
         // get eval gradients
@@ -93,6 +95,7 @@ int main()
             double e0 = (double)board.evaluate(eval_table);
             double e1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
             double e2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
+            //double e2 = e1;
             (*eval_table)[i]--;
 
             double new_loss = get_eval_error(e0, e1, e2);
@@ -154,7 +157,7 @@ int main()
         // update board
         board.play(next_move);
         board_moves++;
-        if (board.check_win(next_move) || board_moves > 50)
+        if (board.check_win(next_move) || board_moves > 20)
         {
             board = NEW_BOARD();
             board_moves = 0;

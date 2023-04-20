@@ -8,7 +8,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define BOARD_SIZE 10
+#define BOARD_SIZE 6
 constexpr size_t BOARD_SIZE_ALLOC = ((BOARD_SIZE + 1) / 2) * 2;
 using BoardRow = uint16_t;
 #define EVAL_TABLE_SIZE 12
