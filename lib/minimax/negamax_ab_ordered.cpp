@@ -45,7 +45,7 @@ int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable *
         }
 
         // checkmate distance pruning
-        if (best >= WIN - 2)
+        if (best >= WIN - 2 || alpha >= WIN - 2)
         {
             board->reset_move(p);
             continue;

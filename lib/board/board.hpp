@@ -8,7 +8,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define BOARD_SIZE 8
+#define BOARD_SIZE 10
 constexpr size_t BOARD_SIZE_ALLOC = ((BOARD_SIZE + 1) / 2) * 2;
 using BoardRow = uint16_t;
 #define EVAL_TABLE_SIZE 12
@@ -19,8 +19,8 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 #define LOSS -WIN
 
 // optimized on board size 10
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {30, 400, 1000, 3800, 43000, WIN, 500, -300, -800, -1900, -5500, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {400, 400, 3000, 40000, WIN/10, WIN, -500, 300, 700, 3000, 37000, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {10, 240, 700, 1600, 300000, WIN, 500, -210, -540, -1200, -3300, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,300000, WIN, 0, 250, 600, 1500, 100000, LOSS};
  
 struct Point
 {

@@ -49,7 +49,9 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
         }
     }
 
-    // Evaluate leaf nodes, cache evaluation
+    
+
+    // LEAF NODE, evaluate, cache, and return
     if (depth == 0)
     {
         int64_t score = board->evaluate(&DEFAULT_EVAL_TABLE);
@@ -63,13 +65,8 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
     if (cached->depth < 1)
     {
         cached->moves = board->get_moves(&DEFAULT_EVAL_TABLE);
-
-        int64_t current_score = board->evaluate(eval_table);
-        // Child score = current score + move_score - best_move_score
-        for (Move& m : cached->moves)
-        {
-            m.score = current_score + m.score;
-        }
+        std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
+                  { return lhs.score > rhs.score; });
     }
 
     // If no more moves are possible, it is a draw
@@ -89,14 +86,13 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
         cached->depth = depth;
     }
 
-    // sort the moves by current evaluation
-    std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
-              { return lhs.score > rhs.score; });
-
     int64_t best = LOSS;
     const int64_t new_alpha = -(beta + SIGN(beta));
+    int64_t visited_children = 0;
     for (Move &m : cached->moves)
     {
+        visited_children++;
+
         const Point p = m.point;
         board->play(p);
 
@@ -108,11 +104,12 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
             cached->beta = WIN;
             cached->depth = TERMINAL;
             m.score = WIN;
-            return WIN;
+            best = WIN;
+            break;
         }
 
         // checkmate distance pruning
-        if (best >= WIN - 2)
+        if (best >= WIN - 2 || alpha >= WIN - 2)
         {
             board->reset_move(p);
             continue;
@@ -128,7 +125,7 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
         if (best >= beta)
         {
             cached->alpha = best;
-            return best;
+            break;
         }
     }
 
@@ -139,11 +136,15 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
         cached->beta = best;
     }
 
-    // fail low nodes
-    if (best < alpha)
+    // ALL-NODE, fail low node
+    if (best <= alpha)
     {
         cached->beta = best;
     }
+
+    // Sort visited children
+    std::stable_sort(&cached->moves[0], &cached->moves[visited_children], [](const Move &lhs, const Move &rhs)
+              { return lhs.score > rhs.score; });
 
     return best;
 }

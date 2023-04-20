@@ -65,7 +65,7 @@ int main()
     //const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
     //#undef RN
 
-    constexpr double LEARNING_RATE = 0.1;
+    double LEARNING_RATE = 0.1;
     constexpr int BATCH_SIZE = 300;
     constexpr int PRINT_EVERY = 10;
 #define NEW_BOARD() Board::random(3)
@@ -85,6 +85,10 @@ int main()
 
     for (int iter = 0; iter >= 0; iter++)
     {
+        // adjust learning rate
+        if (iter < 100000) {LEARNING_RATE = 0.1;}
+        else if (iter < 300000) {LEARNING_RATE = 0.03;}
+        else {LEARNING_RATE = 0.01;}
         // get board evaluation
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
         EvaluationTable *pred_table = (EvaluationTable *)&pred_opt.vals;
@@ -138,7 +142,8 @@ int main()
             cout << ": eval_loss " << (cumul_eval_error / (BATCH_SIZE * PRINT_EVERY));
             cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * PRINT_EVERY));
             cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY));
-            cout << ", W/D/L " << wins << "/" << draws << "/" << losses << "\n";
+            cout << ", W/D/L " << wins << "/" << draws << "/" << losses;
+            cout << ", LR " << LEARNING_RATE << "\n";
 
             cout << "Eval table: ";
             PRINT_ARR(eval_opt.vals);
