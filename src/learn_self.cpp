@@ -22,7 +22,7 @@ double get_eval_error(double e1, double e2, double e3)
     double mean = (e1 + e2 + e3) / 3.;
     double err = std::abs(mean - e1) + std::abs(mean - e2) + std::abs(mean - e3);
     double norm = std::abs(std::asinh(std::abs(mean) - 10000)); // make evaluation centered around 10k
-    return err / 3. + norm/10.;
+    return err / 3. + norm*0.3;
 }
 
 double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -65,6 +65,7 @@ int main()
 
     constexpr double LEARNING_RATE = 0.1;
     constexpr int BATCH_SIZE = 100;
+    constexpr int PRINT_EVERY = 50;
     #define NEW_BOARD() Board::random(3)
 
     AdamOpt<12> eval_opt((int64_t *)&eval_init);
@@ -119,14 +120,14 @@ int main()
         cumul_eval_error += eval_loss;
         cumul_pred_error += pred_loss;
         // print summary
-        if (iter % (BATCH_SIZE * 10) == 0)
+        if (iter % (BATCH_SIZE * PRINT_EVERY) == 0)
         {
             #define PRINT_ARR(arr) for (int i = 0; i < EVAL_TABLE_SIZE; i++) { cout << arr[i] << ", "; } cout << "\n";
 
             cout << "Iteration: " << iter;
-            cout << ": eval_loss " << (cumul_eval_error / (BATCH_SIZE * 10));
-            cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * 10));
-            cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * 10)) << "\n";
+            cout << ": eval_loss " << (cumul_eval_error / (BATCH_SIZE * PRINT_EVERY));
+            cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * PRINT_EVERY));
+            cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY)) << "\n";
 
             cout << "Eval table: ";
             PRINT_ARR(eval_opt.vals);
