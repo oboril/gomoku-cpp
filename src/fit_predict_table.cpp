@@ -40,8 +40,8 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    EvaluationTable predict_table{400, 8000, 16000, 30000, WIN/100, WIN, -2000, 1500, 8500, 20000, WIN/1000, LOSS};
-    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e3, 1e11, 0, 1e3,1e3, 1e4, 2e4, 1e10, 0};
+    EvaluationTable predict_table{400, 8000, 16000, 20000, WIN/100, WIN, 0, 1500, 8500, 20000, WIN/1000, LOSS};
+    constexpr double learning_rates[EVAL_TABLE_SIZE] = {1e3, 5e3, 1e4, 5e4, 1e13, 0, 1e3,1e3, 1e4, 2e4, 1e12, 0};
     constexpr double LR = 10;
     constexpr double MOMENTUM = 0.7;
     constexpr int BATCH = 300;
@@ -53,7 +53,7 @@ int main()
         predict_table_double[i] = (double)predict_table[i];
     }
 
-    Board b = Board::random(4);
+    Board b = Board::random(2);
     double mean_mse = 0;
     int board_moves = 0;
     double gradients[12] = {};
@@ -62,7 +62,7 @@ int main()
         board_moves += 1;
         if (b.play_predicted_move(&predict_table) || board_moves > 10)
         {
-            b = Board::random(4);
+            b = Board::random(2);
             board_moves = 0;
         }
         double rmse = get_eval_errors(&b, &DEFAULT_EVAL_TABLE, &predict_table);
@@ -78,7 +78,7 @@ int main()
                 std::cout << predict_table[i] << ", ";
             }
             std::cout << "\n" << endl;
-            //b.print();
+            b.print();
             mean_mse = 0;
         }
 

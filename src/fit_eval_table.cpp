@@ -29,7 +29,7 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    EvaluationTable eval_table{-100, 2500, 18000, 80000, WIN/100, WIN, 8500, -500, -13000, -45000, -300000, LOSS};
+    EvaluationTable eval_table{100, 1500, 20000, 90000, WIN/100, WIN, 10000, -500, -20000, -70000, -250000, LOSS};
     constexpr double learning_rates[EVAL_TABLE_SIZE] = {10, 1e3, 1e4, 3e4, 0, 0, 1e4, 10, 1e3, 2e4, 1e6, 0};
     constexpr double LR = 1e4;
     constexpr double MOMENTUM = 0.5;
