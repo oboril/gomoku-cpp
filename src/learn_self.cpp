@@ -50,7 +50,10 @@ double get_pred_error(Board *board, const EvaluationTable *eval_table, const Eva
 
         error += std::pow(real_change - pred_change, 2);
 
-        if (++iters == 5) {break;} // consider only 5 best moves
+        if (++iters == 5)
+        {
+            break;
+        } // consider only 5 best moves
     }
 
     return error;
@@ -61,15 +64,15 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {0, 100, 1000, 10000, 100000, WIN, 0, -100, -1000, -10000, -100000, LOSS};
-    constexpr EvaluationTable pred_init = {0, 100, 1000, 10000, 100000, WIN, 0, 100, 1000, 10000, 100000, LOSS};
+    constexpr EvaluationTable eval_init = {10, 1140, 3520, 10530, 5478570, WIN, 5510, -1070, -3340, -8090, -20520, LOSS};
+    constexpr EvaluationTable pred_init = {1360, 2300, 5340, 14460, FORCING * 100, WIN, 0, 1210, 2780, 12470, FORCING * 10, LOSS};
 
-    //#define RN (rand()%10000-5000)
-    //const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
-    //const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
-    //#undef RN
+    // #define RN (rand()%10000-5000)
+    // const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
+    // const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
+    // #undef RN
 
-    double LEARNING_RATE = 0.1;
+    double LEARNING_RATE;
     constexpr int BATCH_SIZE = 300;
     constexpr int PRINT_EVERY = 10;
 #define NEW_BOARD() Board::random(3)
@@ -92,29 +95,38 @@ int main()
     for (int iter = 0; iter >= 0; iter++)
     {
         // adjust learning rate
-        if (iter < 100000) {LEARNING_RATE = 0.1;}
-        else if (iter < 300000) {LEARNING_RATE = 0.03;}
-        else {LEARNING_RATE = 0.01;}
+        if (iter < 100000)
+        {
+            LEARNING_RATE = 0.3;
+        }
+        else if (iter < 300000)
+        {
+            LEARNING_RATE = 0.01;
+        }
+        else
+        {
+            LEARNING_RATE = 0.01;
+        }
         // get board evaluation
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
         EvaluationTable *pred_table = (EvaluationTable *)&pred_opt.vals;
         double eval0 = (double)board.evaluate(eval_table);
-        double eval1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
-        double eval2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-        double eval3 = eval1;//(double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
-        double eval_loss = get_eval_error(eval0, eval1, eval2, eval3);
+        negamax::Result eval1 = negamax::predict(board, 1, eval_table, pred_table, &cumul_iters);
+        negamax::Result eval2 = negamax::predict(board, 2, eval_table, pred_table, &cumul_iters);
+        negamax::Result eval3 = negamax::predict(board, 3, eval_table, pred_table, &cumul_iters);
+        double eval_loss = get_eval_error(eval0, eval1.score, eval2.score, eval3.score);
 
-        neg_evals += eval2 < LOSS/10;
-        pos_evals += eval2 > WIN/10;
+        neg_evals += eval3.score < LOSS / 10;
+        pos_evals += eval3.score > WIN / 10;
 
         // get eval gradients
         for (int i = 0; i < EVAL_TABLE_SIZE; i++)
         {
             (*eval_table)[i]++;
             double e0 = (double)board.evaluate(eval_table);
-            double e1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
-            double e2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-            double e3 = e1;//(double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
+            double e1 = -(double)eval1.final_board.evaluate(eval_table);
+            double e2 = (double)eval2.final_board.evaluate(eval_table);
+            double e3 = -(double)eval3.final_board.evaluate(eval_table);
             (*eval_table)[i]--;
 
             double new_loss = get_eval_error(e0, e1, e2, e3);
@@ -162,7 +174,7 @@ int main()
             PRINT_ARR(pred_opt.vals);
             cout << endl;
 
-            //board.print();
+            // board.print();
 
             cumul_eval_error = 0;
             cumul_pred_error = 0;

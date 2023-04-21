@@ -4,30 +4,32 @@
 
 using namespace negamax;
 
-int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters, Point *best_move);
+Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-int64_t negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters, Point *best_move)
+Result negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
 {
-    return _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters, best_move);
+    return _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters, Point *best_move)
+Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 
     if (depth == 0)
     {
-        return board->evaluate(eval_table);
+        return Result(board->evaluate(eval_table), Point(), (*board));
     }
 
     std::vector<Move> moves = board->get_moves(predict_table);
 
     if (moves.size() == 0)
     {
-        return 0;
+        return Result(0, Point(), (*board));
     }
 
     int64_t best = LOSS;
+    Board best_board;
+    Point best_move;
     int visited_children = 0;
     for (const Move m : moves)
     {
@@ -39,8 +41,7 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
         if (board->check_win(p))
         {
             board->reset_move(p);
-            (*best_move) = p;
-            return WIN;
+            return Result(WIN, p, (*board));
         }
 
         // checkmate distance pruning
@@ -50,18 +51,19 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
             continue;
         }
 
-        int64_t score = _negamax_predict(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters, best_move);
-        score =  -score + SIGN(score);
+        Result eval = _negamax_predict(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
+        int64_t score =  -eval.score + SIGN(eval.score);
         if (score > best)
         {
-            (*best_move) = p;
+            best_move = p;
+            best_board = eval.final_board;
+            best = score;
         }
-        best = MAX(best, score);
         board->reset_move(p);
 
         if (best >= beta)
         {
-            return best;
+            break;
         }
 
 #ifdef LIMIT_MOVES
@@ -72,5 +74,5 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
 #endif
     }
 
-    return best;
+    return Result(best, best_move, best_board);
 }
