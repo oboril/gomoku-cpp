@@ -21,9 +21,6 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
     }
 
     std::vector<Move> moves = board->get_moves(predict_table);
-    // sort the moves
-    std::sort(moves.begin(), moves.end(), [](const Move &lhs, const Move &rhs)
-              { return lhs.score > rhs.score; });
 
     if (moves.size() == 0)
     {

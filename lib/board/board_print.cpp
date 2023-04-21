@@ -97,7 +97,7 @@ void Board::print_highlight(Point p) const
         {
             uint16_t b1 = (m_board[0][y] >> x) & 1;
             uint16_t b2 = (m_board[1][y] >> x) & 1;
-            if (p.x == x && p.y == y)
+            if ((size_t)p.x == x && (size_t)p.y == y)
             {
                 if (b1 && b2)
                 {

@@ -1,5 +1,5 @@
 #include "board.hpp"
-#include <iostream>
+#include <algorithm>
 using std::vector;
 
 inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable *eval_table)
@@ -149,6 +149,10 @@ vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
     {
         m.score += bias - best_move;
     }
+
+    // sort the moves
+    std::sort(moves.begin(), moves.end(), [](const Move &lhs, const Move &rhs)
+              { return lhs.score > rhs.score; });
 
     return moves;
 }

@@ -17,13 +17,13 @@ struct NodeItD
     NodeItD() : depth(-1), alpha(LOSS), beta(WIN) {}
 };
 
-using TranspTable = std::unordered_map<Board, NodeItD>;
+using _TranspTable = std::unordered_map<Board, NodeItD>;
 
-int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
+int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters);
 
 int64_t negamax::abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
 {
-    TranspTable transp_table;
+    _TranspTable transp_table;
 
     for (int64_t id = 1; id < depth; id++)
     {
@@ -33,7 +33,7 @@ int64_t negamax::abot_itd(Board b, int64_t depth, const EvaluationTable *eval_ta
     return _abot_itd(&b, depth, eval_table, predict_table, LOSS, WIN, transp_table, iters);
 }
 
-int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters)
+int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters)
 {
     (*iters)++;
 
@@ -65,8 +65,6 @@ int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table
     if (cached->depth < 1)
     {
         cached->moves = board->get_moves(predict_table);
-        std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
-                  { return lhs.score > rhs.score; });
 
         // if the move is forced, drop all other moves
         if (cached->moves.size() > 1 && cached->moves[cached->moves.size() - 1].score < -FORCING)

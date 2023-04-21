@@ -11,32 +11,6 @@
 
 using namespace negamax;
 
-struct NodeItDFp
-{
-    int64_t depth;
-    int64_t alpha;
-    int64_t beta;
-    std::vector<Move> moves;
-
-#ifdef NULL_MOVE_PRUNING
-    int64_t null_move_eval;
-#endif
-#ifdef FUTILITY_PRUNING
-    int64_t best_worst_move;
-#endif
-    NodeItDFp() : depth(-1), alpha(LOSS), beta(WIN)
-    {
-#ifdef NULL_MOVE_PRUNING
-        null_move_eval = NOT_CACHED;
-#endif
-#ifdef FUTILITY_PRUNING
-        best_worst_move = NOT_CACHED;
-#endif
-    }
-};
-
-using TranspTable = std::unordered_map<Board, NodeItDFp>;
-
 int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
 
 int64_t negamax::pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
@@ -100,8 +74,6 @@ int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eva
     if (cached->depth < 1)
     {
         cached->moves = board->get_moves(predict_table);
-        std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
-                  { return lhs.score > rhs.score; });
 
 #ifdef FUTILITY_PRUNING
         if (cached->moves.size() > 0)

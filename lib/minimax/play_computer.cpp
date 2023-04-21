@@ -6,43 +6,12 @@
 
 #include <iostream>
 
-#define TERMINAL 999999
-#define NOT_CACHED (WIN * 10)
-
 using namespace negamax;
-
-struct NodeItDFp
-{
-    int64_t depth;
-    int64_t alpha;
-    int64_t beta;
-    std::vector<Move> moves;
-
-#ifdef NULL_MOVE_PRUNING
-    int64_t null_move_eval;
-#endif
-#ifdef FUTILITY_PRUNING
-    int64_t best_worst_move;
-#endif
-    NodeItDFp() : depth(-1), alpha(LOSS), beta(WIN)
-    {
-#ifdef NULL_MOVE_PRUNING
-        null_move_eval = NOT_CACHED;
-#endif
-#ifdef FUTILITY_PRUNING
-        best_worst_move = NOT_CACHED;
-#endif
-    }
-};
-
-using TranspTable = std::unordered_map<Board, NodeItDFp>;
 
 int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters, Point * best_move);
 
-int64_t negamax::play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters, Point * best_move)
+int64_t negamax::play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, TranspTable &transp_table, int64_t *iters, Point * best_move)
 {
-    TranspTable transp_table;
-
     for (int64_t id = 1; id < depth; id++)
     {
         _play_computer(&b, id, eval_table, predict_table, LOSS, WIN, transp_table, iters, best_move);
@@ -100,8 +69,6 @@ int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_
     if (cached->depth < 1)
     {
         cached->moves = board->get_moves(predict_table);
-        std::sort(cached->moves.begin(), cached->moves.end(), [](const Move &lhs, const Move &rhs)
-                  { return lhs.score > rhs.score; });
 
 #ifdef FUTILITY_PRUNING
         if (cached->moves.size() > 0)

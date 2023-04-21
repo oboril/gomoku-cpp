@@ -25,8 +25,8 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 // static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,FORCING*100, WIN, 0, 250, 600, 1500, FORCING*10, LOSS};
 
 // optimized on board size 15 TODO: UPDATE THIS
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, 112, 630, 3362, 594787, WIN, 652, -101, -494, -2063, -8143, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {118, 376, 1442, 4171, FORCING*100, WIN, 25, 101, 712, 3301, FORCING*10, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, 114, 352, 1053, 547857, WIN, 551, -107, -334, -809, -2052, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {136, 230, 534, 1446, FORCING*100, WIN, 0, 121, 278, 1247, FORCING*10, LOSS};
 
 struct Point
 {

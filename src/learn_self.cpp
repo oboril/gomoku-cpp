@@ -38,6 +38,7 @@ double get_pred_error(Board *board, const EvaluationTable *eval_table, const Eva
     double error = 0.;
 
     // sum all errors
+    int iters = 0;
     for (const Move m : moves)
     {
         board->play(m.point);
@@ -48,9 +49,11 @@ double get_pred_error(Board *board, const EvaluationTable *eval_table, const Eva
         double pred_change = transform_value(m.score);
 
         error += std::pow(real_change - pred_change, 2);
+
+        if (++iters == 5) {break;} // consider only 5 best moves
     }
 
-    return error/(double) moves.size();
+    return error;
 }
 
 int main()
