@@ -22,7 +22,7 @@ double get_eval_error(double e1, double e2, double e3, double e4)
 
     // make even weights for odd and even moves
     double mean = (e1 + e2 + e3 + e4) / 4.;
-    double err = std::abs(mean - e1) + std::abs(mean - e2) + std::abs(mean - e3) + std::abs(mean - e4);
+    double err = std::pow(mean - e1, 2) + std::pow(mean - e2, 2) + std::pow(mean - e3, 2) + std::pow(mean - e4, 2);
     return err / 4.;
 }
 
@@ -47,10 +47,10 @@ double get_pred_error(Board *board, const EvaluationTable *eval_table, const Eva
         double real_change = transform_value(new_eval - curr_eval);
         double pred_change = transform_value(m.score);
 
-        error += std::abs(real_change - pred_change);
+        error += std::pow(real_change - pred_change, 2);
     }
 
-    return error;
+    return error/(double) moves.size();
 }
 
 int main()
@@ -79,6 +79,8 @@ int main()
     int64_t cumul_iters = 0;
     double cumul_eval_error = 0.;
     double cumul_pred_error = 0.;
+    int pos_evals = 0.;
+    int neg_evals = 0;
     int wins = 0;
     int draws = 0;
     int losses = 0;
@@ -96,8 +98,11 @@ int main()
         double eval0 = (double)board.evaluate(eval_table);
         double eval1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
         double eval2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-        double eval3 = (double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
+        double eval3 = eval1;//(double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
         double eval_loss = get_eval_error(eval0, eval1, eval2, eval3);
+
+        neg_evals += eval2 < LOSS/10;
+        pos_evals += eval2 > WIN/10;
 
         // get eval gradients
         for (int i = 0; i < EVAL_TABLE_SIZE; i++)
@@ -106,7 +111,7 @@ int main()
             double e0 = (double)board.evaluate(eval_table);
             double e1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
             double e2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-            double e3 = (double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
+            double e3 = e1;//(double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
             (*eval_table)[i]--;
 
             double new_loss = get_eval_error(e0, e1, e2, e3);
@@ -144,7 +149,8 @@ int main()
             cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * PRINT_EVERY));
             cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY));
             cout << ", W/D/L " << wins << "/" << draws << "/" << losses;
-            cout << ", LR " << LEARNING_RATE << "\n";
+            cout << ", LR " << LEARNING_RATE;
+            cout << ", pos/neg evals " << pos_evals << "/" << neg_evals << "\n";
 
             cout << "Eval table: ";
             PRINT_ARR(eval_opt.vals);
@@ -158,6 +164,8 @@ int main()
             cumul_eval_error = 0;
             cumul_pred_error = 0;
             cumul_iters = 0;
+            pos_evals = 0;
+            neg_evals = 0;
             wins = 0;
             draws = 0;
             losses = 0;

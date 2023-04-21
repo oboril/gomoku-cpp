@@ -19,5 +19,6 @@ namespace negamax
     //#define FUTILITY_PRUNING 2
 
     // Limit for how many moves to explore at given depth
+    //#define LIMIT_MOVES(x) ((x)*5)
     #define LIMIT_MOVES(x) ((x)*5)
 }

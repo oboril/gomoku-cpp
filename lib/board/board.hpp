@@ -21,9 +21,13 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 #define FORCING ((int64_t)1000000000)
 
 // optimized on board size 10
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {10, 240, 700, 1600, 300000, WIN, 500, -210, -540, -1200, -3300, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,FORCING*100, WIN, 0, 250, 600, 1500, FORCING*10, LOSS};
- 
+// static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {10, 240, 700, 1600, 300000, WIN, 500, -210, -540, -1200, -3300, LOSS};
+// static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,FORCING*100, WIN, 0, 250, 600, 1500, FORCING*10, LOSS};
+
+// optimized on board size 15 TODO: UPDATE THIS
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {2, 143, 1420, 17474, 489746, WIN, 53, -95, -810, -5712, -39043, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {67, 563, 3748, 14631, FORCING*100, WIN, 249, 69, 1461, 14765, FORCING*10, LOSS};
+
 struct Point
 {
     int8_t x;

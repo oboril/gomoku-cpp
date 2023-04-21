@@ -4,8 +4,6 @@
 
 using namespace negamax;
 
-constexpr size_t MAX_MOVES = 20;
-
 int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters, Point *best_move);
 
 int64_t negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters, Point *best_move)
@@ -32,23 +30,6 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
         return 0;
     }
 
-#ifdef NULL_MOVE_PRUNING
-    if (depth <= NULL_MOVE_PRUNING && beta < WIN / 10)
-    {
-        board->swap_player();
-        int64_t null_move_eval = - board->evaluate(eval_table);
-        board->swap_player();
-        if (null_move_eval > beta)
-        {
-            return null_move_eval;
-        }
-    }
-#endif
-
-#ifdef FUTILITY_PRUNING
-    int64_t best_worst_move = moves[0].score - moves[moves.size() - 1].score;
-#endif
-
     int64_t best = LOSS;
     int visited_children = 0;
     for (const Move m : moves)
@@ -56,12 +37,6 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
         visited_children++;
 
         const Point p = m.point;
-
-        // if previous move is forced, don't try any more
-        if (m.score < -FORCING)
-        {
-            break;
-        }
 
         board->play(p);
         if (board->check_win(p))
@@ -84,20 +59,13 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
         {
             (*best_move) = p;
         }
-        best = MAX(best, -score + SIGN(score));
+        best = MAX(best, score);
         board->reset_move(p);
 
         if (best >= beta)
         {
             return best;
         }
-
-#ifdef FUTILITY_PRUNING
-        if (depth <= FUTILITY_PRUNING && visited_children == 1 && best < (alpha - best_worst_move))
-        {
-            return best;
-        }
-#endif
 
 #ifdef LIMIT_MOVES
         if (visited_children >= LIMIT_MOVES(depth))
