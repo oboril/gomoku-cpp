@@ -2,18 +2,14 @@
 #include "board.hpp"
 #include <algorithm>
 
-using namespace negamax;
+int64_t _abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-constexpr size_t MAX_MOVES = 20;
-
-int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters, Point *best_move);
-
-int64_t negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters, Point *best_move)
+int64_t negamax::abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
 {
-    return _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters, best_move);
+    return _abo_fp(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters, Point *best_move)
+int64_t _abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 
@@ -67,7 +63,6 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
         if (board->check_win(p))
         {
             board->reset_move(p);
-            (*best_move) = p;
             return WIN;
         }
 
@@ -78,12 +73,7 @@ int64_t _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eva
             continue;
         }
 
-        int64_t score = _negamax_predict(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters, best_move);
-        score =  -score + SIGN(score);
-        if (score > best)
-        {
-            (*best_move) = p;
-        }
+        int64_t score = _abo_fp(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
         best = MAX(best, -score + SIGN(score));
         board->reset_move(p);
 

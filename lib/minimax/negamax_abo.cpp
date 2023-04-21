@@ -2,14 +2,14 @@
 #include "board.hpp"
 #include <algorithm>
 
-int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters);
+int64_t _abo(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-int64_t negamax_ab_ordered(Board b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t *iters)
+int64_t negamax::abo(Board b, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t *iters)
 {
-    return _negamax_ab_ordered(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
+    return _abo(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters)
+int64_t _abo(Board *board, int64_t depth, const EvaluationTable * eval_table, const EvaluationTable * predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 
@@ -31,6 +31,12 @@ int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable *
     int64_t best = LOSS;
     for (const Move m : moves)
     {
+        // if previous move is forced, don't try any more
+        if (m.score < -FORCING)
+        {
+            break;
+        }
+        
         const Point p = m.point;
         if (!board->is_empty(p))
         {
@@ -51,7 +57,7 @@ int64_t _negamax_ab_ordered(Board *board, int64_t depth, const EvaluationTable *
             continue;
         }
 
-        int64_t score = _negamax_ab_ordered(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
+        int64_t score = _abo(board, depth - 1, eval_table, predict_table, -(beta + SIGN(beta)), -(best + SIGN(best)), iters);
         best = MAX(best, -score + SIGN(score));
         board->reset_move(p);
 

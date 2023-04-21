@@ -15,8 +15,8 @@ int main() {
     bench_board(b);
 
     b = Board();
-    b.moves_from_string("c4a1c3e3c2d5");
-    //bench_board(b);
+    b.moves_from_string("d5e6f6f5d7d6e7c7d8c9e8c8c6f9e4f3g7e5");
+    bench_board(b);
 
     return 0;
 }
@@ -55,10 +55,24 @@ void bench_board(Board b) {
     //BENCH(negamax_abot_itd, 4,   "Negamax abot+id")
     //BENCH(negamax_abot_itd, 5,   "Negamax abot+id")
 
-    BENCH(negamax_ab_ordered, 4, "Negamax abo    ")
-    BENCH(negamax_abot_itd, 4,   "Negamax abot+id")
-    BENCH(negamax_ab_ordered, 5, "Negamax abo    ")
-    BENCH(negamax_abot_itd, 5,   "Negamax abot+id")
-    BENCH(negamax_ab_ordered, 6, "Negamax abo    ")
-    BENCH(negamax_abot_itd, 6,   "Negamax abot+id")
+    //BENCH(negamax::abo, 4,        "Negamax abo         ")
+    //BENCH(negamax::abot_itd, 4,   "Negamax abot_itd    ")
+    BENCH(negamax::abo_fp, 4,     "Negamax abo_fp      ")
+    BENCH(negamax::abot_itd_fp, 4,"Negamax abot_itd_fp ")
+
+    //BENCH(negamax::abo, 5,        "Negamax abo         ")
+    //BENCH(negamax::abot_itd, 5,   "Negamax abot_itd    ")
+    BENCH(negamax::abo_fp, 5,     "Negamax abo_fp      ")
+    BENCH(negamax::abot_itd_fp, 5,"Negamax abot_itd_fp ")
+
+    //BENCH(negamax::abo, 6,        "Negamax abo         ")
+    //BENCH(negamax::abot_itd, 6,   "Negamax abot_itd    ")
+    BENCH(negamax::abo_fp, 6,     "Negamax abo_fp      ")
+    BENCH(negamax::abot_itd_fp, 6,"Negamax abot_itd_fp ")
+
+    BENCH(negamax::abo_fp, 7,     "Negamax abo_fp      ")
+    BENCH(negamax::abot_itd_fp, 7,"Negamax abot_itd_fp ")
+
+    BENCH(negamax::abo_fp, 8,     "Negamax abo_fp      ")
+    BENCH(negamax::abot_itd_fp, 8,"Negamax abot_itd_fp ")
 }

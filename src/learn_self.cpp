@@ -12,17 +12,18 @@ using std::endl;
 // Use the evaluation to calculate gradients for eval table
 // Once a while, use gradients to update values
 
-double get_eval_error(double e1, double e2, double e3)
+double get_eval_error(double e1, double e2, double e3, double e4)
 {
     // Importance scaling, most sensitivity is around 10k-100k
     e1 = transform_value(e1);
     e2 = transform_value(e2);
     e3 = transform_value(e3);
+    e4 = transform_value(e4);
 
-    double mean = (e1 + 2.*e2 + e3) / 4.;
-    double err = std::abs(mean - e1) + 2. * std::abs(mean - e2) + std::abs(mean - e3);  // make even weights for odd and even moves
-    //double norm = std::abs(std::asinh(std::abs(mean) - 100000));                        // make evaluation centered around 10k
-    return err / 4.;// + norm * 0.3;
+    // make even weights for odd and even moves
+    double mean = (e1 + e2 + e3 + e4) / 4.;
+    double err = std::abs(mean - e1) + std::abs(mean - e2) + std::abs(mean - e3) + std::abs(mean - e4);
+    return err / 4.;
 }
 
 double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
@@ -93,22 +94,22 @@ int main()
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
         EvaluationTable *pred_table = (EvaluationTable *)&pred_opt.vals;
         double eval0 = (double)board.evaluate(eval_table);
-        double eval1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
-        double eval2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-        // double eval2 = eval1;
-        double eval_loss = get_eval_error(eval0, eval1, eval2);
+        double eval1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
+        double eval2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
+        double eval3 = (double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
+        double eval_loss = get_eval_error(eval0, eval1, eval2, eval3);
 
         // get eval gradients
         for (int i = 0; i < EVAL_TABLE_SIZE; i++)
         {
             (*eval_table)[i]++;
             double e0 = (double)board.evaluate(eval_table);
-            double e1 = (double)negamax_predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
-            double e2 = (double)negamax_predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
-            // double e2 = e1;
+            double e1 = (double)negamax::predict(board, 1, eval_table, pred_table, &cumul_iters, &next_move);
+            double e2 = (double)negamax::predict(board, 2, eval_table, pred_table, &cumul_iters, &next_move);
+            double e3 = (double)negamax::predict(board, 3, eval_table, pred_table, &cumul_iters, &next_move);
             (*eval_table)[i]--;
 
-            double new_loss = get_eval_error(e0, e1, e2);
+            double new_loss = get_eval_error(e0, e1, e2, e3);
             eval_opt.grad[i] += eval_loss - new_loss;
         }
 

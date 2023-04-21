@@ -49,8 +49,6 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
         }
     }
 
-    
-
     // LEAF NODE, evaluate, cache, and return
     if (depth == 0)
     {
@@ -91,6 +89,12 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
     int64_t visited_children = 0;
     for (Move &m : cached->moves)
     {
+        // if previous move is forced, don't try any more
+        if (m.score < -FORCING)
+        {
+            break;
+        }
+
         visited_children++;
 
         const Point p = m.point;
@@ -144,7 +148,7 @@ int64_t _negamax_abot_itd(Board *board, int64_t depth, const EvaluationTable *ev
 
     // Sort visited children
     std::stable_sort(&cached->moves[0], &cached->moves[visited_children], [](const Move &lhs, const Move &rhs)
-              { return lhs.score > rhs.score; });
+                     { return lhs.score > rhs.score; });
 
     return best;
 }
