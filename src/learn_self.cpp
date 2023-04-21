@@ -77,7 +77,14 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
+    constexpr EvaluationTable eval_init = {
+            0, 10, 100, 1000, 100000, WIN, // P1 counts
+            1000, -5, -50, -500, -10000, LOSS, // bias + P2 counts
+            0, 0, 0, 0,       // P1 11 22 33 44
+            0, 0, 0, 0,       // P2 11 22 33 44
+            0, 0, 0, 0, 0, 0, // P1 21 31 32 41 42 43
+            0, 0, 0, 0, 0, 1  // P2 21 31 32 41 42 43
+    };
     constexpr PredictionTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
 
 
@@ -86,14 +93,15 @@ int main()
     // const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
     // #undef RN
 
-    double LEARNING_RATE;
+    constexpr double EVAL_LR = 0.03;
+    constexpr double PRED_LR = 0.00;
     constexpr int BATCH_SIZE = 500;
-    constexpr double NORM_CONST = 0.001; // prevents eval_table from going to 0
+    //constexpr double NORM_CONST = 0.001; // prevents eval_table from going to 0
     constexpr int PRINT_EVERY = 10;
     constexpr int MAX_MOVES = 20;
 #define NEW_BOARD() Board::random(3)
 
-    AdamOpt<12> eval_opt((int64_t *)&eval_init);
+    AdamOpt<32> eval_opt((int64_t *)&eval_init);
     AdamOpt<12> pred_opt((int64_t *)&pred_init);
 
     Board board = NEW_BOARD();
@@ -106,6 +114,8 @@ int main()
     int wins = 0;
     int draws = 0;
     int losses = 0;
+    double eval_lr;
+    double pred_lr;
     Point next_move;
 
     for (int iter = 0; iter >= 0; iter++)
@@ -113,19 +123,24 @@ int main()
         // adjust learning rate
         if (iter < BATCH_SIZE * 10)
         {
-            LEARNING_RATE = 0.; // adjust optimizer hyperparameters
+            // adjust optimizer hyperparameters
+            eval_lr = 0;
+            pred_lr = 0;
         }
         else if (iter < 300000)
         {
-            LEARNING_RATE = 0.03;
+            eval_lr = EVAL_LR * 1.;
+            pred_lr = PRED_LR * 1.;
         }
         else if (iter < 1000000)
         {
-            LEARNING_RATE = 0.01;
+            eval_lr = EVAL_LR * 0.3;
+            pred_lr = PRED_LR * 0.3;
         }
         else
         {
-            LEARNING_RATE = 0.01;
+            eval_lr = EVAL_LR * 0.1;
+            pred_lr = PRED_LR * 0.1;
         }
         // get board evaluation
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
@@ -192,8 +207,8 @@ int main()
         // print summary
         if (iter % (BATCH_SIZE * PRINT_EVERY) == 0)
         {
-#define PRINT_ARR(arr)                        \
-    for (int i = 0; i < EVAL_TABLE_SIZE; i++) \
+#define PRINT_ARR(arr, size)                  \
+    for (int i = 0; i < size; i++)            \
     {                                         \
         cout << arr[i] << ", ";               \
     }                                         \
@@ -204,14 +219,15 @@ int main()
             cout << ", pred_loss " << (cumul_pred_error / (BATCH_SIZE * PRINT_EVERY));
             cout << ", negamax_iters " << (cumul_iters / (BATCH_SIZE * PRINT_EVERY));
             cout << ", W/D/L " << wins << "/" << draws << "/" << losses;
-            cout << ", LR " << LEARNING_RATE;
+            cout << ", EVAL_LR " << eval_lr;
+            cout << ", PRED_LR " << pred_lr;
             cout << ", pos/neg evals " << pos_evals << "/" << neg_evals << "\n";
 
             cout << "Eval table: ";
-            PRINT_ARR(eval_opt.vals);
+            PRINT_ARR(eval_opt.vals, EVAL_TABLE_SIZE);
 
             cout << "Pred table: ";
-            PRINT_ARR(pred_opt.vals);
+            PRINT_ARR(pred_opt.vals, PRED_TABLE_SIZE);
             cout << endl;
 
             // board.print();
@@ -229,15 +245,15 @@ int main()
         // update values when batch is done
         if (iter % BATCH_SIZE == 0)
         {
-            for (int i = 0; i < EVAL_TABLE_SIZE; i++)
-            {
-                // norm loss = - norm_const * asinh(abs(weight))
-                double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
-                norm_grad *= NORM_CONST * BATCH_SIZE;
-                eval_opt.grad[i] += norm_grad;
-            }
-            pred_opt.apply_gradient(LEARNING_RATE);
-            eval_opt.apply_gradient(LEARNING_RATE);
+            //for (int i = 0; i < EVAL_TABLE_SIZE; i++)
+            //{
+            //    // norm loss = - norm_const * asinh(abs(weight))
+            //    double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
+            //    norm_grad *= NORM_CONST * BATCH_SIZE;
+            //    eval_opt.grad[i] += norm_grad;
+            //}
+            pred_opt.apply_gradient(pred_lr);
+            eval_opt.apply_gradient(eval_lr);
 
             // make sure wins stay as wins
             eval_opt.vals[5] = WIN;

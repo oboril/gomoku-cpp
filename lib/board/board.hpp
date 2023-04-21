@@ -12,7 +12,7 @@
 #define BOARD_SIZE 15
 constexpr size_t BOARD_SIZE_ALLOC = ((BOARD_SIZE + 1) / 2) * 2;
 using BoardRow = uint16_t;
-#define EVAL_TABLE_SIZE 40
+#define EVAL_TABLE_SIZE 32
 #define PRED_TABLE_SIZE 12
 using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 using PredictionTable = int64_t[PRED_TABLE_SIZE];
