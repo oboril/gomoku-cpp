@@ -4,6 +4,7 @@
 #include <chrono>
 #include "adam.hpp"
 #include "error_transform.hpp"
+#include <algorithm>
 using std::cout;
 using std::endl;
 
@@ -26,37 +27,49 @@ double get_eval_error(double e1, double e2, double e3, double e4)
     return err / 4.;
 }
 
-double get_pred_error(Board *board, const EvaluationTable *eval_table, const EvaluationTable *predict_table)
+std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table)
 {
-    // best move should leave eval unchanged
-    // predicted = current + move_prediction
-
-    auto moves = board->get_moves(predict_table);
-
-    double curr_eval = (double)board->evaluate(eval_table);
-
-    double error = 0.;
-
-    // sum all errors
-    int iters = 0;
-    for (const Move m : moves)
+    auto moves = board->get_moves(eval_table); // the evaluation will not be used !
+    std::vector<Move> output;
+    for (Move m : moves)
     {
         board->play(m.point);
         double new_eval = -(double)board->evaluate(eval_table);
         board->reset_move(m.point);
+        output.push_back(Move(m.point, new_eval));
+    }
+    std::sort(output.begin(), output.end(), [](const Move &lhs, const Move &rhs)
+              { return lhs.score > rhs.score; });
 
-        double real_change = transform_value(new_eval - curr_eval);
-        double pred_change = transform_value(m.score);
+    return output;
+}
 
-        error += std::pow(real_change - pred_change, 2);
+double get_pred_error(Board *board, std::vector<Move> &moves, int64_t curr_eval, const EvaluationTable *predict_table)
+{
+    // best move should leave eval unchanged
+    // predicted = current + move_prediction
 
-        if (++iters == 5)
+    double error = 0.;
+
+    auto pred_moves = board->get_moves(predict_table);
+
+    // sum all errors
+    for (const Move m : moves)
+    {
+        for (const Move pm : pred_moves)
         {
-            break;
-        } // consider only 5 best moves
+            if (m.point == pm.point)
+            {
+                double real_change = transform_value(m.score - curr_eval);
+                double pred_change = transform_value(pm.score);
+
+                error += std::pow(real_change - pred_change, 2);
+                break;
+            }
+        }
     }
 
-    return error;
+    return error / ((double)moves.size());
 }
 
 int main()
@@ -64,8 +77,10 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {10, 1140, 3520, 10530, 5478570, WIN, 5510, -1070, -3340, -8090, -20520, LOSS};
-    constexpr EvaluationTable pred_init = {1360, 2300, 5340, 14460, FORCING * 100, WIN, 0, 1210, 2780, 12470, FORCING * 10, LOSS};
+    constexpr EvaluationTable eval_init = {1, 114, 352, 1053, 547857, WIN, 551, -107, -334, -809, -2052, LOSS};
+    constexpr EvaluationTable pred_init = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
+    // constexpr EvaluationTable eval_init = {1, 100, 1000, 10000, 547857, WIN, 1000, -100, -1000, -1000, -100000, LOSS};
+    // constexpr EvaluationTable pred_init = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
 
     // #define RN (rand()%10000-5000)
     // const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
@@ -74,7 +89,9 @@ int main()
 
     double LEARNING_RATE;
     constexpr int BATCH_SIZE = 300;
+    constexpr double NORM_CONST = 0.1; // prevents eval_table from going to 0
     constexpr int PRINT_EVERY = 10;
+    constexpr int MAX_MOVES = 20;
 #define NEW_BOARD() Board::random(3)
 
     AdamOpt<12> eval_opt((int64_t *)&eval_init);
@@ -95,9 +112,13 @@ int main()
     for (int iter = 0; iter >= 0; iter++)
     {
         // adjust learning rate
-        if (iter < 100000)
+        if (iter < BATCH_SIZE * 10)
         {
-            LEARNING_RATE = 0.3;
+            LEARNING_RATE = 0.; // adjust optimizer hyperparameters
+        }
+        else if (iter < 100000)
+        {
+            LEARNING_RATE = 0.03;
         }
         else if (iter < 300000)
         {
@@ -116,31 +137,51 @@ int main()
         negamax::Result eval3 = negamax::predict(board, 3, eval_table, pred_table, &cumul_iters);
         double eval_loss = get_eval_error(eval0, eval1.score, eval2.score, eval3.score);
 
-        neg_evals += eval3.score < LOSS / 10;
-        pos_evals += eval3.score > WIN / 10;
+        next_move = eval2.best_move;
+
+        neg_evals += eval2.score < LOSS / 10;
+        pos_evals += eval2.score > WIN / 10;
 
         // get eval gradients
         for (int i = 0; i < EVAL_TABLE_SIZE; i++)
         {
             (*eval_table)[i]++;
-            double e0 = (double)board.evaluate(eval_table);
-            double e1 = -(double)eval1.final_board.evaluate(eval_table);
-            double e2 = (double)eval2.final_board.evaluate(eval_table);
-            double e3 = -(double)eval3.final_board.evaluate(eval_table);
+            double ev0 = (double)board.evaluate(eval_table);
+            double ev1 = (double)eval1.final_board.evaluate(eval_table);
+            double ev2 = (double)eval2.final_board.evaluate(eval_table);
+            double ev3 = (double)eval3.final_board.evaluate(eval_table);
             (*eval_table)[i]--;
+            if (eval1.final_board.get_player() != board.get_player())
+            {
+                ev1 *= -1.;
+            }
+            if (eval2.final_board.get_player() != board.get_player())
+            {
+                ev2 *= -1.;
+            }
+            if (eval3.final_board.get_player() != board.get_player())
+            {
+                ev3 *= -1.;
+            }
 
-            double new_loss = get_eval_error(e0, e1, e2, e3);
+            double new_loss = get_eval_error(ev0, ev1, ev2, ev3);
+
             eval_opt.grad[i] += eval_loss - new_loss;
         }
 
         // get prediction loss
-        double pred_loss = get_pred_error(&board, eval_table, pred_table);
+        auto moves = get_best_moves(&board, eval_table);
+        while (moves.size() > MAX_MOVES)
+        {
+            moves.pop_back();
+        }
+        double pred_loss = get_pred_error(&board, moves, eval0, pred_table);
 
         // get pred gradients
         for (int i = 0; i < EVAL_TABLE_SIZE; i++)
         {
             (*pred_table)[i]++;
-            double new_loss = get_pred_error(&board, eval_table, pred_table);
+            double new_loss = get_pred_error(&board, moves, eval0, pred_table);
             (*pred_table)[i]--;
 
             pred_opt.grad[i] += pred_loss - new_loss;
@@ -189,6 +230,10 @@ int main()
         // update values when batch is done
         if (iter % BATCH_SIZE == 0)
         {
+            for (int i = 0; i < EVAL_TABLE_SIZE; i++)
+            {
+                eval_opt.grad[i] += 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]) * NORM_CONST;
+            }
             pred_opt.apply_gradient(LEARNING_RATE);
             eval_opt.apply_gradient(LEARNING_RATE);
 

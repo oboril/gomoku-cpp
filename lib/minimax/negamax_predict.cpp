@@ -8,7 +8,9 @@ Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval
 
 Result negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
 {
-    return _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
+    Result res = _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
+    res.score += depth * SIGN(res.score);
+    return res;
 }
 
 Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
@@ -40,8 +42,9 @@ Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval
         board->play(p);
         if (board->check_win(p))
         {
+            Board ret_board = (*board);
             board->reset_move(p);
-            return Result(WIN, p, (*board));
+            return Result(WIN, p, ret_board);
         }
 
         // checkmate distance pruning

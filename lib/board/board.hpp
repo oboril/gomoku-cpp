@@ -26,7 +26,7 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 
 // optimized on board size 15 TODO: UPDATE THIS
 static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, 114, 352, 1053, 547857, WIN, 551, -107, -334, -809, -2052, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {136, 230, 534, 1446, FORCING*100, WIN, 0, 121, 278, 1247, FORCING*10, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
 
 struct Point
 {
@@ -34,6 +34,7 @@ struct Point
     int8_t y;
     Point(int8_t x, int8_t y) : x(x), y(y) {}
     Point() : x(0), y(0) {}
+    bool operator==(const Point &other) const { return (x == other.x) && (y == other.y); }
 };
 
 struct Move
@@ -41,7 +42,7 @@ struct Move
     Point point;
     int64_t score;
     Move(Point p, int64_t s) : score(s) { point = p; }
-    Move() : score(0) { point = Point(-1,-1); }
+    Move() : score(0) { point = Point(-1, -1); }
 };
 
 class Board
@@ -52,7 +53,7 @@ public:
 
     static Board random(int iters);
 
-    bool play_predicted_move(const EvaluationTable * predict_table);
+    bool play_predicted_move(const EvaluationTable *predict_table);
     bool moves_from_string(const std::string &moves);
     void set(Point p, bool player);
     void reset_move(Point p);
@@ -68,7 +69,7 @@ public:
     int64_t evaluate(const EvaluationTable *eval_table) const;
     std::vector<Move> get_moves(const EvaluationTable *eval_table) const;
 
-    inline bool get_player() const {return m_player; }
+    inline bool get_player() const { return m_player; }
 
     bool operator==(const Board &rhs) const;
     bool operator!=(const Board &rhs) const { return !operator==(rhs); };
