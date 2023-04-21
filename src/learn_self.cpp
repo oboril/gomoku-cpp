@@ -153,6 +153,8 @@ int main()
             PRINT_ARR(pred_opt.vals);
             cout << endl;
 
+            //board.print();
+
             cumul_eval_error = 0;
             cumul_pred_error = 0;
             cumul_iters = 0;
@@ -166,10 +168,16 @@ int main()
         {
             pred_opt.apply_gradient(LEARNING_RATE);
             eval_opt.apply_gradient(LEARNING_RATE);
+
+            // make sure wins stay as wins
+            eval_opt.vals[5] = WIN;
+            eval_opt.vals[11] = LOSS;
+            eval_opt.vals_d[5] = (double)WIN;
+            eval_opt.vals_d[11] = (double)LOSS;
         }
 
         // randomly change move
-        if (rand() % 3 == 0)
+        if (rand() % 20 == 0)
         {
             auto moves = board.get_moves(pred_table);
             next_move = moves[rand() % moves.size()].point;

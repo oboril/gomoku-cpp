@@ -1,0 +1,7 @@
+Compiling learn_self.cpp...
+Running learn_self.exe...
+
+Iteration: 0: eval_loss 0.000924927, pred_loss 0.464788, negamax_iters 0, W/D/L 0/0/0, LR 0.1
+Eval table: 0, 100, 1000, 10000, 100000, 1000000000000, 0, -100, -1000, -10000, -100000, -1000000000000, 
+Pred table: 0, 100, 1000, 10000, 100000, 1000000000000, 0, 100, 1000, 10000, 100000, -1000000000000, 
+
