@@ -80,4 +80,8 @@ void bench_board(Board b) {
     BENCH(negamax::abo_fp, 8,          "Negamax abo_fp          ")
     BENCH(negamax::abot_itd_fp, 8,     "Negamax abot_itd_fp     ")
     BENCH(negamax::pvs_abot_itd_fp, 8, "Negamax pvs_abot_itd_fp ")
+
+    //BENCH(negamax::abo_fp, 9,          "Negamax abo_fp          ")
+    //BENCH(negamax::abot_itd_fp, 9,     "Negamax abot_itd_fp     ")
+    //BENCH(negamax::pvs_abot_itd_fp, 9, "Negamax pvs_abot_itd_fp ")
 }
