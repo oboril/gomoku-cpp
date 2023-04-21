@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#define EVALUATE_5INAROW
+
 // EVAL TABLE LAYOUT
 //
 // 0 - 11 (12): stone counts
@@ -147,6 +149,16 @@ int64_t Board::evaluate(const EvaluationTable *eval_table) const
     {
         for (int y = 0; y < BOARD_SIZE; y++)
         {
+#ifdef EVALUATE_5INAROW
+            if (counts[x][y][0][5][0] + counts[x][y][0][5][1] + counts[x][y][0][5][2] + counts[x][y][0][5][3] > 0)
+            {
+                return (*eval_table)[5];
+            }
+            if (counts[x][y][1][5][0] + counts[x][y][1][5][1] + counts[x][y][1][5][2] + counts[x][y][1][5][3] > 0)
+            {
+                return (*eval_table)[11];
+            }
+#endif
             if (((p1[y]|p2[y]) >> x) & 1)
             {
                 memset(&counts[x][y][0][0][0], 0, sizeof(counts[x][y]));

@@ -18,7 +18,8 @@ def transform_val(vals):
     #most_important = np.arcsinh(10000)
     #avals = np.tanh((avals-most_important)*0.5) + np.tanh((avals+most_important)*0.5)
     #return avals
-    return np.tanh(np.arcsinh(vals/100)/8)
+    #return np.tanh(np.arcsinh(vals/100)/8)
+    return np.tanh(np.arcsinh(vals)/9)
     #return np.arcsinh(vals/100)
 
 avals = transform_val(vals)

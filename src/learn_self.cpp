@@ -24,9 +24,10 @@ double get_eval_error(double e1, double e2, double e3, double e4)
     e4 = transform_value(e4);
 
     // make even weights for odd and even moves
-    double mean = (e1 + e2 + e3 + e4) / 4.;
-    double err = std::pow(mean - e1, 2) + std::pow(mean - e2, 2) + std::pow(mean - e3, 2) + std::pow(mean - e4, 2);
-    return err / 4.;
+    // double mean = (e1 + e2 + e3 + e4) / 4.;
+    // double err = std::pow(mean - e1, 2) + std::pow(mean - e2, 2) + std::pow(mean - e3, 2) + std::pow(mean - e4, 2);
+    // return err / 4.;
+    return std::pow(e1-e3, 2) + std::pow(e2-e4, 2);
 }
 
 std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table, const PredictionTable *pred_table)
@@ -80,8 +81,8 @@ int main()
     srand((unsigned int)time(NULL));
 
     constexpr EvaluationTable eval_init = {
-            0, 10, 100, 1000, 100000, WIN, // P1 counts
-            1000, -5, -50, -500, -10000, LOSS, // bias + P2 counts
+            0, 100, 1000, 10000, 1000000, WIN, // P1 counts
+            10000, -50, -500, -5000, -100000, LOSS, // bias + P2 counts
             10, 10, 10, 10,       // P1 11 22 33 44
             -10, -10, -10, -10,       // P2 11 22 33 44
             10, 10, 10, 10, 10, 10, // P1 21 31 32 41 42 43
@@ -95,12 +96,12 @@ int main()
     // const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
     // #undef RN
 
-    constexpr double EVAL_LR = 0.1;
+    constexpr double EVAL_LR = 0.03;
     constexpr double PRED_LR = 0.00;
-    constexpr int BATCH_SIZE = 500;
+    constexpr int BATCH_SIZE = 200;
     constexpr double NORM_CONST = 0.003; // prevents eval_table from going to 0
-    constexpr int PRINT_EVERY = 10;
-    constexpr int MAX_MOVES = 20;
+    constexpr int PRINT_EVERY = 5;
+    constexpr int MAX_MOVES = 1;//20; not learning right now
 #define NEW_BOARD() Board::random(3)
 
     AdamOpt<32> eval_opt((int64_t *)&eval_init);
@@ -182,6 +183,8 @@ int main()
             }
 
             double new_loss = get_eval_error(ev0, ev1, ev2, ev3);
+
+            //cout << "e0 " << eval0 << "/" << ev0 << " e2 " << eval2.score << "/" << ev2 << endl; 
 
             eval_opt.grad[i] += eval_loss - new_loss;
         }
