@@ -87,7 +87,7 @@ int64_t _pvs_abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_tab
             // if null window fails, try full window again
             if (score > best)
             {
-                int64_t score = _pvs_abo_fp(board, depth - 1, eval_table, predict_table, new_alpha, new_beta, iters);
+                score = _pvs_abo_fp(board, depth - 1, eval_table, predict_table, new_alpha, new_beta, iters);
                 best = MAX(best, -score + SIGN(score));
             }
             board->reset_move(p);
