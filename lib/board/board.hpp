@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "move.hpp"
 
 #define SIGN(a) (((a) > 0) - ((a) < 0))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -24,26 +25,11 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 // static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {10, 240, 700, 1600, 300000, WIN, 500, -210, -540, -1200, -3300, LOSS};
 // static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,FORCING*100, WIN, 0, 250, 600, 1500, FORCING*10, LOSS};
 
-// optimized on board size 15 TODO: UPDATE THIS
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {1, 114, 352, 1053, 547857, WIN, 551, -107, -334, -809, -2052, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
+// optimized on board size 15
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
+static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {3446, 10386, 18377, 67042, FORCING * 100, WIN, -215, 4244, 16313, 40680, FORCING * 10, LOSS};
 
-struct Point
-{
-    int8_t x;
-    int8_t y;
-    Point(int8_t x, int8_t y) : x(x), y(y) {}
-    Point() : x(0), y(0) {}
-    bool operator==(const Point &other) const { return (x == other.x) && (y == other.y); }
-};
 
-struct Move
-{
-    Point point;
-    int64_t score;
-    Move(Point p, int64_t s) : score(s) { point = p; }
-    Move() : score(0) { point = Point(-1, -1); }
-};
 
 class Board
 {

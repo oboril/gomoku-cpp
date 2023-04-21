@@ -77,10 +77,9 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {1, 114, 352, 1053, 547857, WIN, 551, -107, -334, -809, -2052, LOSS};
-    constexpr EvaluationTable pred_init = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
-    // constexpr EvaluationTable eval_init = {1, 100, 1000, 10000, 547857, WIN, 1000, -100, -1000, -1000, -100000, LOSS};
-    // constexpr EvaluationTable pred_init = {136, 230, 534, 1446, FORCING * 100, WIN, 0, 121, 278, 1247, FORCING * 10, LOSS};
+    constexpr EvaluationTable eval_init = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
+    constexpr EvaluationTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
+
 
     // #define RN (rand()%10000-5000)
     // const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
@@ -88,8 +87,8 @@ int main()
     // #undef RN
 
     double LEARNING_RATE;
-    constexpr int BATCH_SIZE = 300;
-    constexpr double NORM_CONST = 0.1; // prevents eval_table from going to 0
+    constexpr int BATCH_SIZE = 500;
+    constexpr double NORM_CONST = 0.001; // prevents eval_table from going to 0
     constexpr int PRINT_EVERY = 10;
     constexpr int MAX_MOVES = 20;
 #define NEW_BOARD() Board::random(3)
@@ -116,11 +115,11 @@ int main()
         {
             LEARNING_RATE = 0.; // adjust optimizer hyperparameters
         }
-        else if (iter < 100000)
+        else if (iter < 300000)
         {
             LEARNING_RATE = 0.03;
         }
-        else if (iter < 300000)
+        else if (iter < 1000000)
         {
             LEARNING_RATE = 0.01;
         }
@@ -232,7 +231,10 @@ int main()
         {
             for (int i = 0; i < EVAL_TABLE_SIZE; i++)
             {
-                eval_opt.grad[i] += 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]) * NORM_CONST;
+                // norm loss = - norm_const * asinh(abs(weight))
+                double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
+                norm_grad *= NORM_CONST * BATCH_SIZE;
+                eval_opt.grad[i] += norm_grad;
             }
             pred_opt.apply_gradient(LEARNING_RATE);
             eval_opt.apply_gradient(LEARNING_RATE);

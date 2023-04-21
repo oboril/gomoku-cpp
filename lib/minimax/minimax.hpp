@@ -31,7 +31,7 @@ namespace negamax
 
 // Limit for how many moves to explore at given depth
 // #define LIMIT_MOVES(x) ((x)*5)
-#define LIMIT_MOVES(x) ((x)*20)
+#define LIMIT_MOVES(x) ((x)*5)
 
 #define TERMINAL 999999
 #define NOT_CACHED (WIN * 10)
