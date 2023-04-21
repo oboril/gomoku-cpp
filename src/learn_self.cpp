@@ -8,6 +8,8 @@
 using std::cout;
 using std::endl;
 
+#define DEBUG(x) cout << "DEBUG " << x << endl;
+
 // Board generation: generate 3 random points, then play best move on depth 2
 // Use the board to calculate gradients for predict table
 // Use the evaluation to calculate gradients for eval table
@@ -80,10 +82,10 @@ int main()
     constexpr EvaluationTable eval_init = {
             0, 10, 100, 1000, 100000, WIN, // P1 counts
             1000, -5, -50, -500, -10000, LOSS, // bias + P2 counts
-            0, 0, 0, 0,       // P1 11 22 33 44
-            0, 0, 0, 0,       // P2 11 22 33 44
-            0, 0, 0, 0, 0, 0, // P1 21 31 32 41 42 43
-            0, 0, 0, 0, 0, 1  // P2 21 31 32 41 42 43
+            10, 10, 10, 10,       // P1 11 22 33 44
+            -10, -10, -10, -10,       // P2 11 22 33 44
+            10, 10, 10, 10, 10, 10, // P1 21 31 32 41 42 43
+            -10, -10, -10, -10, -10, -10  // P2 21 31 32 41 42 43
     };
     constexpr PredictionTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
 
@@ -93,10 +95,10 @@ int main()
     // const EvaluationTable pred_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
     // #undef RN
 
-    constexpr double EVAL_LR = 0.03;
+    constexpr double EVAL_LR = 0.1;
     constexpr double PRED_LR = 0.00;
     constexpr int BATCH_SIZE = 500;
-    //constexpr double NORM_CONST = 0.001; // prevents eval_table from going to 0
+    constexpr double NORM_CONST = 0.003; // prevents eval_table from going to 0
     constexpr int PRINT_EVERY = 10;
     constexpr int MAX_MOVES = 20;
 #define NEW_BOARD() Board::random(3)
@@ -142,13 +144,14 @@ int main()
             eval_lr = EVAL_LR * 0.1;
             pred_lr = PRED_LR * 0.1;
         }
+
         // get board evaluation
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
         PredictionTable *pred_table = (PredictionTable *)&pred_opt.vals;
         double eval0 = (double)board.evaluate(eval_table);
         negamax::Result eval1 = negamax::predict(board, 1, eval_table, pred_table, &cumul_iters);
-        negamax::Result eval2 = negamax::predict(board, 2, eval_table, pred_table, &cumul_iters);
-        negamax::Result eval3 = negamax::predict(board, 3, eval_table, pred_table, &cumul_iters);
+        negamax::Result eval2 = negamax::predict(board, 2, &DEFAULT_EVAL_TABLE, pred_table, &cumul_iters); // !!!!!!!!!
+        negamax::Result eval3 = negamax::predict(board, 3, &DEFAULT_EVAL_TABLE, pred_table, &cumul_iters); // !!!!!!!!!
         double eval_loss = get_eval_error(eval0, eval1.score, eval2.score, eval3.score);
 
         next_move = eval2.best_move;
@@ -162,8 +165,8 @@ int main()
             (*eval_table)[i]++;
             double ev0 = (double)board.evaluate(eval_table);
             double ev1 = (double)eval1.final_board.evaluate(eval_table);
-            double ev2 = (double)eval2.final_board.evaluate(eval_table);
-            double ev3 = (double)eval3.final_board.evaluate(eval_table);
+            double ev2 = (double)eval2.final_board.evaluate(&DEFAULT_EVAL_TABLE); // !!!!!!!!!!
+            double ev3 = (double)eval3.final_board.evaluate(&DEFAULT_EVAL_TABLE); // !!!!!!!!!!
             (*eval_table)[i]--;
             if (eval1.final_board.get_player() != board.get_player())
             {
@@ -192,7 +195,7 @@ int main()
         double pred_loss = get_pred_error(&board, moves, eval0, pred_table);
 
         // get pred gradients
-        for (int i = 0; i < EVAL_TABLE_SIZE; i++)
+        for (int i = 0; i < PRED_TABLE_SIZE; i++)
         {
             (*pred_table)[i]++;
             double new_loss = get_pred_error(&board, moves, eval0, pred_table);
@@ -246,12 +249,13 @@ int main()
         if (iter % BATCH_SIZE == 0)
         {
             //for (int i = 0; i < EVAL_TABLE_SIZE; i++)
-            //{
-            //    // norm loss = - norm_const * asinh(abs(weight))
-            //    double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
-            //    norm_grad *= NORM_CONST * BATCH_SIZE;
-            //    eval_opt.grad[i] += norm_grad;
-            //}
+            for (int i = 0; i < 12; i++)
+            {
+                // NORMALIZTION LOSS: norm_loss = - norm_const * asinh(abs(weight))
+                double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
+                norm_grad *= NORM_CONST * BATCH_SIZE;
+                eval_opt.grad[i] += norm_grad;
+            }
             pred_opt.apply_gradient(pred_lr);
             eval_opt.apply_gradient(eval_lr);
 

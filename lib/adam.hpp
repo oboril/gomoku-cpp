@@ -52,7 +52,7 @@ void AdamOpt<N>::apply_gradient(double learning_rate)
 
         // update average values
         avg_vals[i] = avg_vals[i] * AVG_MOMENUTM + std::abs(vals_d[i]) * (1. - AVG_MOMENUTM);
-        avg_vals[i] += (double)(avg_vals[i] < 1.);
+        avg_vals[i] += 10.*(double)(avg_vals[i] < 10.);
         
         // reset gradient
         grad[i] = 0;
