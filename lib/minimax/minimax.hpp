@@ -9,18 +9,18 @@ namespace negamax
         using TranspTable = std::unordered_map<Board, NodeItDFp>;
         struct Result;
 
-        int64_t abo(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
-        int64_t abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
+        int64_t abo(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
+        int64_t abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
 
-        int64_t abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
-        int64_t abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
+        int64_t abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
+        int64_t abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
 
-        int64_t pvs_abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
-        int64_t pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
+        int64_t pvs_abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
+        int64_t pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
 
-        Result predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters);
+        Result predict(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters);
 
-        int64_t play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, TranspTable &transp_table, int64_t *iters, Point *best_move);
+        int64_t play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, TranspTable &transp_table, int64_t *iters, Point *best_move);
 
 // Maximum depth for null move pruning
 // #define NULL_MOVE_PRUNING 3

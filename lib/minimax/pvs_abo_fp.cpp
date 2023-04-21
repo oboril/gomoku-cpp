@@ -2,14 +2,14 @@
 #include "board.hpp"
 #include <algorithm>
 
-int64_t _pvs_abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
+int64_t _pvs_abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-int64_t negamax::pvs_abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
+int64_t negamax::pvs_abo_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters)
 {
     return _pvs_abo_fp(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
 }
 
-int64_t _pvs_abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
+int64_t _pvs_abo_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 

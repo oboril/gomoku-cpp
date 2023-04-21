@@ -86,7 +86,7 @@ int main()
             cout << BOLDGREEN<<"YOU WON !!!"<<RESET<<endl;
             break;
         }
-        if (b.get_moves(&DEFAULT_EVAL_TABLE).size() == 0)
+        if (b.get_moves(&DEFAULT_PREDICT_TABLE).size() == 0)
         {
             cout << BOLDYELLOW<<"IT'S A DRAW !!!"<<RESET<<endl;
             break;
@@ -105,7 +105,7 @@ int main()
             cout << BOLDRED<<"COMPUTER WON !!!"<<RESET<<endl;
             break;
         }
-        if (b.get_moves(&DEFAULT_EVAL_TABLE).size() == 0)
+        if (b.get_moves(&DEFAULT_PREDICT_TABLE).size() == 0)
         {
             cout << BOLDYELLOW<<"IT'S A DRAW !!!"<<RESET<<endl;
             break;

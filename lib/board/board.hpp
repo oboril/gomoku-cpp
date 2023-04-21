@@ -12,8 +12,10 @@
 #define BOARD_SIZE 15
 constexpr size_t BOARD_SIZE_ALLOC = ((BOARD_SIZE + 1) / 2) * 2;
 using BoardRow = uint16_t;
-#define EVAL_TABLE_SIZE 12
+#define EVAL_TABLE_SIZE 40
+#define PRED_TABLE_SIZE 12
 using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
+using PredictionTable = int64_t[PRED_TABLE_SIZE];
 
 // WIN = 10^12
 #define WIN ((int64_t)1000000000000)
@@ -27,8 +29,7 @@ using EvaluationTable = int64_t[EVAL_TABLE_SIZE];
 
 // optimized on board size 15
 static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
-static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {3446, 10386, 18377, 67042, FORCING * 100, WIN, -215, 4244, 16313, 40680, FORCING * 10, LOSS};
-
+static constexpr PredictionTable DEFAULT_PREDICT_TABLE = {3446, 10386, 18377, 67042, FORCING * 100, WIN, -215, 4244, 16313, 40680, FORCING * 10, LOSS};
 
 
 class Board
@@ -39,7 +40,7 @@ public:
 
     static Board random(int iters);
 
-    bool play_predicted_move(const EvaluationTable *predict_table);
+    bool play_predicted_move(const PredictionTable *predict_table);
     bool moves_from_string(const std::string &moves);
     void set(Point p, bool player);
     void reset_move(Point p);
@@ -53,7 +54,7 @@ public:
     bool check_win(Point p) const;
 
     int64_t evaluate(const EvaluationTable *eval_table) const;
-    std::vector<Move> get_moves(const EvaluationTable *eval_table) const;
+    std::vector<Move> get_moves(const PredictionTable *eval_table) const;
 
     inline bool get_player() const { return m_player; }
 

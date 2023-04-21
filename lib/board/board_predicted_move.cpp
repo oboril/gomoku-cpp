@@ -1,6 +1,6 @@
 #include "board.hpp"
 
-bool Board::play_predicted_move(const EvaluationTable *predict_table)
+bool Board::play_predicted_move(const PredictionTable *predict_table)
 {
     auto moves = get_moves(predict_table);
     Move best_move(Point(0, 0), LOSS);

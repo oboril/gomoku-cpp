@@ -19,9 +19,9 @@ struct NodeItD
 
 using _TranspTable = std::unordered_map<Board, NodeItD>;
 
-int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters);
+int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters);
 
-int64_t negamax::abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
+int64_t negamax::abot_itd(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters)
 {
     _TranspTable transp_table;
 
@@ -33,7 +33,7 @@ int64_t negamax::abot_itd(Board b, int64_t depth, const EvaluationTable *eval_ta
     return _abot_itd(&b, depth, eval_table, predict_table, LOSS, WIN, transp_table, iters);
 }
 
-int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters)
+int64_t _abot_itd(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, _TranspTable &transp_table, int64_t *iters)
 {
     (*iters)++;
 

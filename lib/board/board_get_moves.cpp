@@ -2,7 +2,7 @@
 #include <algorithm>
 using std::vector;
 
-inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable *eval_table)
+inline int64_t eval_counts(BoardRow c1, BoardRow c2, const PredictionTable *eval_table)
 {
     if (c2 == 0)
     {
@@ -19,7 +19,7 @@ inline int64_t eval_counts(BoardRow c1, BoardRow c2, const EvaluationTable *eval
 }
 
 // Returns valid moves and their evaluated score
-vector<Move> Board::get_moves(const EvaluationTable *eval_table) const
+vector<Move> Board::get_moves(const PredictionTable *eval_table) const
 {
     int64_t eval[BOARD_SIZE][BOARD_SIZE] = {};
 

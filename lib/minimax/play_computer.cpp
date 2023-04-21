@@ -8,9 +8,9 @@
 
 using namespace negamax;
 
-int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters, Point * best_move);
+int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters, Point * best_move);
 
-int64_t negamax::play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, TranspTable &transp_table, int64_t *iters, Point * best_move)
+int64_t negamax::play_computer(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, TranspTable &transp_table, int64_t *iters, Point * best_move)
 {
     for (int64_t id = 1; id < depth; id++)
     {
@@ -20,7 +20,7 @@ int64_t negamax::play_computer(Board b, int64_t depth, const EvaluationTable *ev
     return _play_computer(&b, depth, eval_table, predict_table, LOSS, WIN, transp_table, iters, best_move);
 }
 
-int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters, Point * best_move)
+int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters, Point * best_move)
 {
     (*iters)++;
 

@@ -11,9 +11,9 @@
 
 using namespace negamax;
 
-int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
+int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters);
 
-int64_t negamax::pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
+int64_t negamax::pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters)
 {
     TranspTable transp_table;
 
@@ -25,7 +25,7 @@ int64_t negamax::pvs_abot_itd_fp(Board b, int64_t depth, const EvaluationTable *
     return _pvs_abot_itd_fp(&b, depth, eval_table, predict_table, LOSS, WIN, transp_table, iters);
 }
 
-int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters)
+int64_t _pvs_abot_itd_fp(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, TranspTable &transp_table, int64_t *iters)
 {
     (*iters)++;
 

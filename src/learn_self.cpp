@@ -27,9 +27,9 @@ double get_eval_error(double e1, double e2, double e3, double e4)
     return err / 4.;
 }
 
-std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table)
+std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table, const PredictionTable *pred_table)
 {
-    auto moves = board->get_moves(eval_table); // the evaluation will not be used !
+    auto moves = board->get_moves(pred_table);
     std::vector<Move> output;
     for (Move m : moves)
     {
@@ -44,14 +44,14 @@ std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table
     return output;
 }
 
-double get_pred_error(Board *board, std::vector<Move> &moves, int64_t curr_eval, const EvaluationTable *predict_table)
+double get_pred_error(Board *board, std::vector<Move> &moves, int64_t curr_eval, const PredictionTable *pred_table)
 {
     // best move should leave eval unchanged
     // predicted = current + move_prediction
 
     double error = 0.;
 
-    auto pred_moves = board->get_moves(predict_table);
+    auto pred_moves = board->get_moves(pred_table);
 
     // sum all errors
     for (const Move m : moves)
@@ -78,7 +78,7 @@ int main()
     srand((unsigned int)time(NULL));
 
     constexpr EvaluationTable eval_init = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
-    constexpr EvaluationTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
+    constexpr PredictionTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
 
 
     // #define RN (rand()%10000-5000)
@@ -129,7 +129,7 @@ int main()
         }
         // get board evaluation
         EvaluationTable *eval_table = (EvaluationTable *)&eval_opt.vals;
-        EvaluationTable *pred_table = (EvaluationTable *)&pred_opt.vals;
+        PredictionTable *pred_table = (PredictionTable *)&pred_opt.vals;
         double eval0 = (double)board.evaluate(eval_table);
         negamax::Result eval1 = negamax::predict(board, 1, eval_table, pred_table, &cumul_iters);
         negamax::Result eval2 = negamax::predict(board, 2, eval_table, pred_table, &cumul_iters);
@@ -169,7 +169,7 @@ int main()
         }
 
         // get prediction loss
-        auto moves = get_best_moves(&board, eval_table);
+        auto moves = get_best_moves(&board, eval_table, pred_table);
         while (moves.size() > MAX_MOVES)
         {
             moves.pop_back();

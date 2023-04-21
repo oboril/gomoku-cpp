@@ -4,16 +4,16 @@
 
 using namespace negamax;
 
-Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
+Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters);
 
-Result negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t *iters)
+Result negamax::predict(Board b, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t *iters)
 {
     Result res = _negamax_predict(&b, depth, eval_table, predict_table, LOSS, WIN, iters);
     res.score += depth * SIGN(res.score);
     return res;
 }
 
-Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const EvaluationTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
+Result _negamax_predict(Board *board, int64_t depth, const EvaluationTable *eval_table, const PredictionTable *predict_table, int64_t alpha, int64_t beta, int64_t *iters)
 {
     (*iters)++;
 
