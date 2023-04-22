@@ -24,10 +24,10 @@ double get_eval_error(double e1, double e2, double e3, double e4)
     e4 = transform_value(e4);
 
     // make even weights for odd and even moves
-    // double mean = (e1 + e2 + e3 + e4) / 4.;
-    // double err = std::pow(mean - e1, 2) + std::pow(mean - e2, 2) + std::pow(mean - e3, 2) + std::pow(mean - e4, 2);
-    // return err / 4.;
-    return std::pow(e1-e3, 2) + std::pow(e2-e4, 2);
+    double mean = (e1 + e2 + e3 + e4) / 4.;
+    double err = std::pow(mean - e1, 2) + std::pow(mean - e2, 2) + std::pow(mean - e3, 2) + std::pow(mean - e4, 2);
+    return err / 4.;
+    //return std::pow(e1 - e3, 2) + std::pow(e2 - e4, 2);
 }
 
 std::vector<Move> get_best_moves(Board *board, const EvaluationTable *eval_table, const PredictionTable *pred_table)
@@ -80,16 +80,16 @@ int main()
     // Seed random with time
     srand((unsigned int)time(NULL));
 
-    constexpr EvaluationTable eval_init = {
-            0, 100, 1000, 10000, 1000000, WIN, // P1 counts
-            10000, -50, -500, -5000, -100000, LOSS, // bias + P2 counts
-            10, 10, 10, 10,       // P1 11 22 33 44
-            -10, -10, -10, -10,       // P2 11 22 33 44
-            10, 10, 10, 10, 10, 10, // P1 21 31 32 41 42 43
-            -10, -10, -10, -10, -10, -10  // P2 21 31 32 41 42 43
-    };
+    //constexpr EvaluationTable eval_init = {
+    //    0, 1000, 10000, 100000, 10000000, WIN,      // P1 counts
+    //    10000, -500, -5000, -50000, -1000000, LOSS, // bias + P2 counts
+    //    1000, 1000, 1000, 10000,                    // P1 11 22 33 44
+    //    -1000, -1000, -1000, -10000,                // P2 11 22 33 44
+    //    1000, 1000, 1000, 1000, 1000, 10000,        // P1 21 31 32 41 42 43
+    //    -1000, -1000, -1000, -1000, -1000, -10000   // P2 21 31 32 41 42 43
+    //};
+    constexpr EvaluationTable eval_init = {8, 3377, 12540, 42779, 218406, 1000000000000, 14, -2098, -8800, -28593, -170960891, -1000000000000, 63, 15, -9, 15, -8277, -10909, -167238, -2594056, 252, 26, 9, 4, -10, 15, -9561, -7214, -19951, -204788, -242003, -2593398};
     constexpr PredictionTable pred_init = {568, 5780, 16914, 57450, FORCING * 100, WIN, -360, 1897, 9934, 33104, FORCING * 10, LOSS};
-
 
     // #define RN (rand()%10000-5000)
     // const EvaluationTable eval_init = {RN, RN, RN, RN, RN, WIN, RN, RN, RN, RN, RN, LOSS};
@@ -98,10 +98,10 @@ int main()
 
     constexpr double EVAL_LR = 0.03;
     constexpr double PRED_LR = 0.00;
-    constexpr int BATCH_SIZE = 200;
-    constexpr double NORM_CONST = 0.003; // prevents eval_table from going to 0
-    constexpr int PRINT_EVERY = 5;
-    constexpr int MAX_MOVES = 1;//20; not learning right now
+    constexpr int BATCH_SIZE = 500;
+    constexpr double NORM_CONST = 0.001; // prevents eval_table from going to 0
+    constexpr int PRINT_EVERY = 10;
+    constexpr int MAX_MOVES = 1; // 20; not learning right now
 #define NEW_BOARD() Board::random(3)
 
     AdamOpt<32> eval_opt((int64_t *)&eval_init);
@@ -151,8 +151,8 @@ int main()
         PredictionTable *pred_table = (PredictionTable *)&pred_opt.vals;
         double eval0 = (double)board.evaluate(eval_table);
         negamax::Result eval1 = negamax::predict(board, 1, eval_table, pred_table, &cumul_iters);
-        negamax::Result eval2 = negamax::predict(board, 2, &DEFAULT_EVAL_TABLE, pred_table, &cumul_iters); // !!!!!!!!!
-        negamax::Result eval3 = negamax::predict(board, 3, &DEFAULT_EVAL_TABLE, pred_table, &cumul_iters); // !!!!!!!!!
+        negamax::Result eval2 = negamax::predict(board, 2, eval_table, pred_table, &cumul_iters); // !!!!!!!!!
+        negamax::Result eval3 = negamax::predict(board, 3, eval_table, pred_table, &cumul_iters); // !!!!!!!!!
         double eval_loss = get_eval_error(eval0, eval1.score, eval2.score, eval3.score);
 
         next_move = eval2.best_move;
@@ -166,8 +166,8 @@ int main()
             (*eval_table)[i]++;
             double ev0 = (double)board.evaluate(eval_table);
             double ev1 = (double)eval1.final_board.evaluate(eval_table);
-            double ev2 = (double)eval2.final_board.evaluate(&DEFAULT_EVAL_TABLE); // !!!!!!!!!!
-            double ev3 = (double)eval3.final_board.evaluate(&DEFAULT_EVAL_TABLE); // !!!!!!!!!!
+            double ev2 = (double)eval2.final_board.evaluate(eval_table); // !!!!!!!!!!
+            double ev3 = (double)eval3.final_board.evaluate(eval_table); // !!!!!!!!!!
             (*eval_table)[i]--;
             if (eval1.final_board.get_player() != board.get_player())
             {
@@ -184,7 +184,7 @@ int main()
 
             double new_loss = get_eval_error(ev0, ev1, ev2, ev3);
 
-            //cout << "e0 " << eval0 << "/" << ev0 << " e2 " << eval2.score << "/" << ev2 << endl; 
+            // cout << "e0 " << eval0 << "/" << ev0 << " e2 " << eval2.score << "/" << ev2 << endl;
 
             eval_opt.grad[i] += eval_loss - new_loss;
         }
@@ -213,11 +213,11 @@ int main()
         // print summary
         if (iter % (BATCH_SIZE * PRINT_EVERY) == 0)
         {
-#define PRINT_ARR(arr, size)                  \
-    for (int i = 0; i < size; i++)            \
-    {                                         \
-        cout << arr[i] << ", ";               \
-    }                                         \
+#define PRINT_ARR(arr, size)       \
+    for (int i = 0; i < size; i++) \
+    {                              \
+        cout << arr[i] << ", ";    \
+    }                              \
     cout << "\n";
 
             cout << "Iteration: " << iter;
@@ -251,11 +251,11 @@ int main()
         // update values when batch is done
         if (iter % BATCH_SIZE == 0)
         {
-            //for (int i = 0; i < EVAL_TABLE_SIZE; i++)
+            // for (int i = 0; i < EVAL_TABLE_SIZE; i++)
             for (int i = 0; i < 12; i++)
             {
                 // NORMALIZTION LOSS: norm_loss = - norm_const * asinh(abs(weight))
-                double norm_grad = 1/std::sqrt(1+std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
+                double norm_grad = 1 / std::sqrt(1 + std::pow(eval_opt.vals_d[i], 2)) * (double)SIGN(eval_opt.vals_d[i]);
                 norm_grad *= NORM_CONST * BATCH_SIZE;
                 eval_opt.grad[i] += norm_grad;
             }
