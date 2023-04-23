@@ -52,6 +52,30 @@ Point get_move(Board & b)
     }
 }
 
+int get_depth() 
+{
+    int depth;
+    while (true)
+    {
+        cout << BOLDWHITE << "Choose difficulty (recommended 5-8): " << RESET;
+        cin >> depth;
+
+        if(cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore();
+            std::cout << RED << "Incorrect format!" << RESET << "\n";
+            continue;
+        }
+        if (depth < 1 || depth > 12)
+        {
+            std::cout << RED << "The difficulty is out of allowed range!" << RESET << "\n";
+            continue;
+        }
+        return depth;
+    }
+}
+
 void print_eval(int64_t eval)
 {
     cout << "Evaluation: ";
@@ -64,7 +88,7 @@ void print_eval(int64_t eval)
         cout << "-M" << (WIN-eval);
     }
     else {
-        cout << round(std::asinh(-(double)eval/100.)*10.)/10.;
+        cout << round(std::asinh(-(double)eval/100000.)*10.)/10.;
     }
 
     cout << endl;
@@ -72,6 +96,8 @@ void print_eval(int64_t eval)
 
 int main()
 {
+    const int depth = get_depth();
+
     Board b;
     negamax::TranspTable transp_table;
     b.print();
@@ -80,6 +106,7 @@ int main()
         // let player make a move
         Point p = get_move(b);
         b.play(p);
+        b.print_highlight(p);
 
         if (b.check_win(p))
         {
@@ -92,13 +119,12 @@ int main()
             break;
         }
 
-        b.print_highlight(p);
-
         // calculate best move for computer
         int64_t iters = 0;
-        int64_t eval = negamax::play_computer(b, 8, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, transp_table, &iters, &p);
+        int64_t eval = negamax::play_computer(b, depth, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, transp_table, &iters, &p);
         print_eval(eval);
         b.play(p);
+        b.print_highlight(p);
 
         if (b.check_win(p))
         {
@@ -109,9 +135,7 @@ int main()
         {
             cout << BOLDYELLOW<<"IT'S A DRAW !!!"<<RESET<<endl;
             break;
-        }
-
-        b.print_highlight(p);
+        }        
     }
     return 0;
 }

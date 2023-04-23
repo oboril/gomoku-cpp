@@ -34,6 +34,10 @@ int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_
 
         if (alpha >= beta)
         {
+            if (cached->moves.size() > 0)
+            {
+                *best_move = cached->moves[0].point;
+            }
             return alpha;
         }
     }
@@ -109,6 +113,11 @@ int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_
         visited_children++;
 
         const Point p = m.point;
+
+        if (!board->is_empty(p)){
+            std::cout << "ERROR NOT EMPTY" << std::endl;
+        }
+
         board->play(p);
 
         // Check if the move is winning
@@ -132,35 +141,16 @@ int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_
         }
 
         const int64_t new_beta = -(best + SIGN(best));
-        // PVS
-        if (visited_children == 1)
+        const int new_depth = (cached->moves.size() == 1) ? depth : depth-1; // increase depth for forced moves
+        int64_t score = _play_computer(board, new_depth, eval_table, predict_table, new_alpha, new_beta, transp_table, iters, best_move);
+        score = -score + SIGN(score);
+        m.score = score;
+        if (score > best)
         {
-            // search first child with full window
-            int64_t score = _play_computer(board, depth - 1, eval_table, predict_table, new_alpha, new_beta, transp_table, iters, best_move);
-            score = -score + SIGN(score);
-            m.score = score;
-            best = MAX(best, score);
-            board->reset_move(p);
-
-            (*best_move) = p;
+            best = score;
+            *best_move = p;
         }
-        else
-        {
-            // try null window search
-            int64_t score = _play_computer(board, depth - 1, eval_table, predict_table, new_beta-1, new_beta, transp_table, iters, best_move);
-            score = -score + SIGN(score);
-            // if null window failed, redo the search
-            if (score > best)
-            {
-                score = _play_computer(board, depth - 1, eval_table, predict_table, new_alpha, new_beta, transp_table, iters, best_move);
-                score = -score + SIGN(score);
-
-                (*best_move) = p;
-            }
-            m.score = score;
-            best = MAX(best, score);
-            board->reset_move(p);
-        }
+        board->reset_move(p);
 
         // fail-high check
         if (best >= beta)
@@ -176,8 +166,8 @@ int64_t _play_computer(Board *board, int64_t depth, const EvaluationTable *eval_
         }
 #endif
 
-#ifdef LIMIT_MOVES
-        if (visited_children >= LIMIT_MOVES(depth))
+#ifdef LIMIT_MOVES_SCORED
+        if (visited_children >= LIMIT_MOVES_SCORED(depth, best))
         {
             break;
         }

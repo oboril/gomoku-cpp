@@ -33,6 +33,8 @@ namespace negamax
 // #define LIMIT_MOVES(x) ((x)*5)
 #define LIMIT_MOVES(x) ((x)*5)
 
+#define LIMIT_MOVES_SCORED(depth, score) (((score) < -1000000) ? (999) : ((score < 1000000)) ? (((depth)<5)?((depth)*5):20) : (((depth)<5)?((depth)*3):10))
+
 #define TERMINAL 999999
 #define NOT_CACHED (WIN * 10)
 

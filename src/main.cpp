@@ -11,17 +11,21 @@ int main() {
     bench_board(b);
 
     b = Board();
-    b.moves_from_string("c3d4b4d2");
+    b.moves_from_string("h9g8h7f9h8h10");
     bench_board(b);
 
     b = Board();
     b.moves_from_string("d5e6f6f5d7d6e7c7d8c9e8c8c6f9e4f3g7e5");
     bench_board(b);
 
+    b = Board();
+    b.moves_from_string("h9g8h7f9h8h10g7l11f7");
+    bench_board(b);
+
     return 0;
 }
 
-#define BENCH(func, depth, name) iters = 0; { Timer _t; eval = func(b, depth, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, &iters);} std::cout << name << " evaluation (d=" << depth << "): " << eval << " (" << iters << " iters)" << std::endl;
+#define BENCH(func, depth, name) iters = 0; { /*Timer _t;*/ eval = func(b, depth, &DEFAULT_EVAL_TABLE, &DEFAULT_PREDICT_TABLE, &iters);} std::cout << name << " evaluation (d=" << depth << "): " << eval << " (" << iters << " iters)" << std::endl;
 
 void bench_board(Board b) {
     b.print();
@@ -57,6 +61,18 @@ void bench_board(Board b) {
 
     //BENCH(negamax::abo, 4,        "Negamax abo         ")
     //BENCH(negamax::abot_itd, 4,   "Negamax abot_itd    ")
+    BENCH(negamax::abo_fp, 1,          "Negamax abo_fp          ")
+    BENCH(negamax::abot_itd_fp, 1,     "Negamax abot_itd_fp     ")
+    BENCH(negamax::pvs_abot_itd_fp, 1, "Negamax pvs_abot_itd_fp ")
+
+    BENCH(negamax::abo_fp, 2,          "Negamax abo_fp          ")
+    BENCH(negamax::abot_itd_fp, 2,     "Negamax abot_itd_fp     ")
+    BENCH(negamax::pvs_abot_itd_fp, 2, "Negamax pvs_abot_itd_fp ")
+
+    BENCH(negamax::abo_fp, 3,          "Negamax abo_fp          ")
+    BENCH(negamax::abot_itd_fp, 3,     "Negamax abot_itd_fp     ")
+    BENCH(negamax::pvs_abot_itd_fp, 3, "Negamax pvs_abot_itd_fp ")
+
     BENCH(negamax::abo_fp, 4,          "Negamax abo_fp          ")
     BENCH(negamax::abot_itd_fp, 4,     "Negamax abot_itd_fp     ")
     BENCH(negamax::pvs_abot_itd_fp, 4, "Negamax pvs_abot_itd_fp ")
@@ -77,9 +93,9 @@ void bench_board(Board b) {
     BENCH(negamax::abot_itd_fp, 7,     "Negamax abot_itd_fp     ")
     BENCH(negamax::pvs_abot_itd_fp, 7, "Negamax pvs_abot_itd_fp ")
 
-    BENCH(negamax::abo_fp, 8,          "Negamax abo_fp          ")
-    BENCH(negamax::abot_itd_fp, 8,     "Negamax abot_itd_fp     ")
-    BENCH(negamax::pvs_abot_itd_fp, 8, "Negamax pvs_abot_itd_fp ")
+    //BENCH(negamax::abo_fp, 8,          "Negamax abo_fp          ")
+    //BENCH(negamax::abot_itd_fp, 8,     "Negamax abot_itd_fp     ")
+    //BENCH(negamax::pvs_abot_itd_fp, 8, "Negamax pvs_abot_itd_fp ")
 
     //BENCH(negamax::abo_fp, 9,          "Negamax abo_fp          ")
     //BENCH(negamax::abot_itd_fp, 9,     "Negamax abot_itd_fp     ")

@@ -28,7 +28,8 @@ using PredictionTable = int64_t[PRED_TABLE_SIZE];
 // static constexpr EvaluationTable DEFAULT_PREDICT_TABLE = {220, 300, 700, 1800,FORCING*100, WIN, 0, 250, 600, 1500, FORCING*10, LOSS};
 
 // optimized on board size 15
-static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
+// static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {77, 3691, 16233, 42646, 10000000, WIN, 47139, -4269, -13974, -36452, -109778, LOSS};
+static constexpr EvaluationTable DEFAULT_EVAL_TABLE = {17, 3348, 16050, 65109, WIN/10, WIN, 56966, -2333, -13498, -50243, -299474, LOSS, 68, 57, -12, 6215, -4144, -8966, -47748, -1396, 532, 49, 75, -2314, -33, 934, -5767, -9688, -9514, -17152, -16229, -317205};
 static constexpr PredictionTable DEFAULT_PREDICT_TABLE = {3446, 10386, 18377, 67042, FORCING * 100, WIN, -215, 4244, 16313, 40680, FORCING * 10, LOSS};
 
 
