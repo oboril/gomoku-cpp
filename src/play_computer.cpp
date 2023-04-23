@@ -4,9 +4,10 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <limits>
 using namespace std;
 
-Point get_move(Board & b)
+Point get_move(Board &b)
 {
     string input;
     while (true)
@@ -14,45 +15,50 @@ Point get_move(Board & b)
         cout << BOLDWHITE << "Write your move (e.g. f8): " << RESET;
         cin >> input;
 
-        if (input.length() == 2) {
+        if (input.length() == 2)
+        {
             const char letter = input[0];
             const char number = input[1];
             if (letter <= 'o' && letter >= 'a' && number > '0' && number <= '9')
             {
-                Point p(letter-'a', BOARD_SIZE - (number-'0'));
+                Point p(letter - 'a', BOARD_SIZE - (number - '0'));
                 if (b.is_empty(p))
                 {
                     return p;
                 }
-                else 
+                else
                 {
-                    cout << RED << "Cannot play here\n" << RESET;
+                    cout << RED << "Cannot play here\n"
+                         << RESET;
                     continue;
                 }
             }
         }
-        else if (input.length() == 3) {
+        else if (input.length() == 3)
+        {
             const char letter = input[0];
             const char number = input[2];
             if (letter <= 'o' && letter >= 'a' && number >= '0' && number <= '9' && input[1] == '1')
             {
-                Point p(letter-'a', BOARD_SIZE - (number-'0'+10));
+                Point p(letter - 'a', BOARD_SIZE - (number - '0' + 10));
                 if (b.is_empty(p))
                 {
                     return p;
                 }
-                else 
+                else
                 {
-                    cout << RED << "Cannot play here\n" << RESET;
+                    cout << RED << "Cannot play here\n"
+                         << RESET;
                     continue;
                 }
             }
         }
-        cout << RED << "Invalid format!\n" << RESET;
+        cout << RED << "Invalid format!\n"
+             << RESET;
     }
 }
 
-int get_depth() 
+int get_depth()
 {
     int depth;
     while (true)
@@ -60,7 +66,7 @@ int get_depth()
         cout << BOLDWHITE << "Choose difficulty (recommended 5-8): " << RESET;
         cin >> depth;
 
-        if(cin.fail())
+        if (cin.fail())
         {
             std::cin.clear();
             std::cin.ignore();
@@ -79,16 +85,17 @@ int get_depth()
 void print_eval(int64_t eval)
 {
     cout << "Evaluation: ";
-    if (eval < LOSS+100)
+    if (eval < LOSS + 100)
     {
-        cout << "M" << (eval-LOSS);
+        cout << "M" << (eval - LOSS);
     }
-    else if (eval > WIN-100)
+    else if (eval > WIN - 100)
     {
-        cout << "-M" << (WIN-eval);
+        cout << "-M" << (WIN - eval);
     }
-    else {
-        cout << round(std::asinh(-(double)eval/100000.)*10.)/10.;
+    else
+    {
+        cout << round(std::asinh(-(double)eval / 100000.) * 10.) / 10.;
     }
 
     cout << endl;
@@ -101,7 +108,7 @@ int main()
     Board b;
     negamax::TranspTable transp_table;
     b.print();
-    while(true)
+    while (true)
     {
         // let player make a move
         Point p = get_move(b);
@@ -110,12 +117,12 @@ int main()
 
         if (b.check_win(p))
         {
-            cout << BOLDGREEN<<"YOU WON !!!"<<RESET<<endl;
+            cout << BOLDGREEN << "YOU WON !!!" << RESET << endl;
             break;
         }
         if (b.get_moves(&DEFAULT_PREDICT_TABLE).size() == 0)
         {
-            cout << BOLDYELLOW<<"IT'S A DRAW !!!"<<RESET<<endl;
+            cout << BOLDYELLOW << "IT'S A DRAW !!!" << RESET << endl;
             break;
         }
 
@@ -128,14 +135,17 @@ int main()
 
         if (b.check_win(p))
         {
-            cout << BOLDRED<<"COMPUTER WON !!!"<<RESET<<endl;
+            cout << BOLDRED << "COMPUTER WON !!!" << RESET << endl;
             break;
         }
         if (b.get_moves(&DEFAULT_PREDICT_TABLE).size() == 0)
         {
-            cout << BOLDYELLOW<<"IT'S A DRAW !!!"<<RESET<<endl;
+            cout << BOLDYELLOW << "IT'S A DRAW !!!" << RESET << endl;
             break;
-        }        
+        }
     }
+    cout << "Press enter to exit..." << endl;
+    cin.ignore();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return 0;
 }
